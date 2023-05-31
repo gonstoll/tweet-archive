@@ -1,7 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['pbs.twimg.com'],
+    remotePatterns: [
+      {protocol: 'https', hostname: 'pbs.twimg.com'},
+      {protocol: 'https', hostname: 'abs.twimg.com'},
+    ],
+  },
+  experimental: {
+    serverComponentsExternalPackages: ['mysql2'],
   },
 }
 
