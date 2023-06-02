@@ -11,11 +11,10 @@ import {
 import {relations} from 'drizzle-orm'
 
 export const tweets = mysqlTable('tweets', {
-  id: serial('tweet_id').primaryKey(),
+  id: varchar('tweet_id', {length: 30}).notNull(),
   description: text('description'),
-  url: varchar('url', {length: 2083}),
-  created_at: date('created_at'),
-  tagIds: int('tag_id'),
+  url: varchar('url', {length: 2083}).notNull(),
+  createdAt: date('created_at').notNull(),
 })
 
 export const tweetsRelations = relations(tweets, ({many}) => ({
@@ -23,9 +22,9 @@ export const tweetsRelations = relations(tweets, ({many}) => ({
 }))
 
 export const tags = mysqlTable('tags', {
-  id: serial('tag_id').primaryKey(),
-  name: varchar('name', {length: 255}),
-  color: mysqlEnum('color', ['red', 'green', 'blue', 'yellow']),
+  id: serial('tag_id').primaryKey().notNull(),
+  name: varchar('name', {length: 255}).notNull(),
+  color: mysqlEnum('color', ['red', 'green', 'blue', 'yellow']).notNull(),
 })
 
 export const tagsRelations = relations(tags, ({many}) => ({

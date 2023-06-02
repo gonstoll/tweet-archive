@@ -4,6 +4,7 @@ const envVariables = z.object({
   DATABASE_HOST: z.string(),
   DATABASE_USERNAME: z.string(),
   DATABASE_PASSWORD: z.string(),
+  DATABASE_URL: z.string(),
   NODE_ENV: z.enum(['development', 'production', 'test']),
 })
 

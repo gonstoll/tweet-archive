@@ -1,9 +1,8 @@
-import * as schema from './schema'
-import {drizzle} from 'drizzle-orm/planetscale-serverless'
 import {connect} from '@planetscale/database'
-import {ENV} from '~/env'
+import {drizzle} from 'drizzle-orm/planetscale-serverless'
+import {ENV} from '~/env.js'
+import * as schema from './schema.js'
 
-// create the connection
 const connection = connect({
   host: ENV.DATABASE_HOST,
   username: ENV.DATABASE_USERNAME,
