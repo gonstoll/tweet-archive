@@ -1,12 +1,13 @@
 import {connect} from '@planetscale/database'
-import {InferModel, eq} from 'drizzle-orm'
+import {InferModel, eq, like} from 'drizzle-orm'
 import {drizzle} from 'drizzle-orm/planetscale-serverless'
 import {ENV} from '~/env'
 import * as schema from './schema'
 
 type Tweet = InferModel<typeof schema.tweet>
 type Tag = InferModel<typeof schema.tag>
-type TweetWithTag = Tweet & {tags?: Array<Tag>}
+type TweetWithTag = InferModel<typeof schema.tweetWithTag>
+type UserTweet = Tweet & {tags?: Array<Tag>}
 
 const connection = connect({
   host: ENV.DATABASE_HOST,
@@ -16,14 +17,14 @@ const connection = connect({
 
 export const db = drizzle(connection, {schema})
 
-export async function getTweets() {
-  const tweetWithTags = await db
-    .select()
-    .from(schema.tweetWithTag)
-    .rightJoin(schema.tweet, eq(schema.tweetWithTag.tweetId, schema.tweet.id))
-    .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
-
-  const result = tweetWithTags.reduce<Array<TweetWithTag>>((acc, row) => {
+function mergeTweetWithTags(
+  rows: Array<{
+    tweet: Tweet
+    tag: Tag | null
+    tweetWithTag: TweetWithTag | null
+  }>
+) {
+  return rows.reduce<Array<UserTweet>>((acc, row) => {
     const {tweet, tag, tweetWithTag} = row
     const storedTweet = acc.find(t => t.id === tweetWithTag?.tweetId)
 
@@ -47,6 +48,25 @@ export async function getTweets() {
 
     return acc
   }, [])
+}
 
-  return result
+export async function getTweetsByQuery(query = '') {
+  const tweetWithTags = await db
+    .select()
+    .from(schema.tweetWithTag)
+    .where(like(schema.tweet.description, `%${query}%`))
+    .rightJoin(schema.tweet, eq(schema.tweetWithTag.tweetId, schema.tweet.id))
+    .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
+
+  return mergeTweetWithTags(tweetWithTags)
+}
+
+export async function getTweets() {
+  const tweetWithTags = await db
+    .select()
+    .from(schema.tweetWithTag)
+    .rightJoin(schema.tweet, eq(schema.tweetWithTag.tweetId, schema.tweet.id))
+    .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
+
+  return mergeTweetWithTags(tweetWithTags)
 }
