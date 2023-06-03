@@ -14,7 +14,7 @@ export default async function Home() {
 
   return (
     <div className="flex justify-center">
-      <div className="columns-3 gap-4 lg:grid-cols-2 xl:grid-cols-tweet-xl">
+      <div className="gap-4 lg:columns-2 xl:columns-3">
         {tweets.map(t => (
           <div
             key={t.id}
