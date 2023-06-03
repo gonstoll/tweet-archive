@@ -1,4 +1,5 @@
 import {NextTweet} from 'next-tweet'
+import {getTags, getTweets} from '~/db/db'
 import {classNames} from '~/utils/classnames'
 
 type Tweet = {
@@ -38,9 +39,7 @@ const TWEETS = [
     id: '1663166812760965120',
     url: 'https://twitter.com/housecor/status/1663166812760965120',
     description: 'Cory tweeting about too much consistency',
-    tags: [
-      {id: 789, name: 'consistency', color: 'yellow'},
-    ],
+    tags: [{id: 789, name: 'consistency', color: 'yellow'}],
     createdAt: '2023-06-02T19:00:00.000Z',
   },
   {
@@ -65,7 +64,11 @@ const tagColors = {
   yellow: 'bg-yellow-100 text-yellow-800',
 }
 
-export default function Home() {
+export default async function Home() {
+  const tweets = await getTags()
+
+  console.dir(tweets, {depth: null})
+
   return (
     <div className="flex justify-center">
       <div className="columns-3 gap-4 lg:grid-cols-2 xl:grid-cols-tweet-xl">

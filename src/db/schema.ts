@@ -1,24 +1,25 @@
+import {relations} from 'drizzle-orm'
 import {
+  date,
+  int,
+  mysqlEnum,
   mysqlTable,
+  primaryKey,
   serial,
   text,
   varchar,
-  date,
-  mysqlEnum,
-  int,
-  primaryKey,
 } from 'drizzle-orm/mysql-core'
-import {relations} from 'drizzle-orm'
 
 export const tweets = mysqlTable('tweets', {
-  id: varchar('tweet_id', {length: 30}).notNull(),
+  id: serial('id').primaryKey().notNull(),
+  tweetId: varchar('tweet_id', {length: 30}).notNull(),
   description: text('description'),
   url: varchar('url', {length: 2083}).notNull(),
   createdAt: date('created_at').notNull(),
 })
 
 export const tweetsRelations = relations(tweets, ({many}) => ({
-  tags: many(tags),
+  tags: many(tagsToTweets),
 }))
 
 export const tags = mysqlTable('tags', {
@@ -28,18 +29,14 @@ export const tags = mysqlTable('tags', {
 })
 
 export const tagsRelations = relations(tags, ({many}) => ({
-  tweets: many(tags),
+  tweets: many(tagsToTweets),
 }))
 
-const tagsToTweets = mysqlTable(
+export const tagsToTweets = mysqlTable(
   'tags_to_tweets',
   {
-    tweetId: int('tweet_id')
-      .notNull()
-      .references(() => tweets.id),
-    tagId: int('tag_id')
-      .notNull()
-      .references(() => tags.id),
+    tweetId: int('tweet_id').notNull(),
+    tagId: int('tag_id').notNull(),
   },
   table => ({
     primaryKey: primaryKey(table.tweetId, table.tagId),
