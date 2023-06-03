@@ -4,11 +4,10 @@ The motivation behind this project is to have a place to store tweets that I fin
 
 ## Features
 
-- [ ] Store tweets in a database with:
-  - [ ] ID
-  - [ ] Description
-  - [ ] Date
-  - [ ] Description (optional)
+- [x] Store tweets in a database with:
+  - [x] ID
+  - [x] Date
+  - [x] Description (optional)
 - [ ] Search through tweets by description text
 - [ ] Filter tweets by tags
 - [ ] Sort tweets by date
