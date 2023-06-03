@@ -10,7 +10,7 @@ import {
   varchar,
 } from 'drizzle-orm/mysql-core'
 
-export const tweets = mysqlTable('tweets', {
+export const tweet = mysqlTable('tweet', {
   id: serial('id').primaryKey().notNull(),
   tweetId: varchar('tweet_id', {length: 30}).notNull(),
   description: text('description'),
@@ -18,22 +18,22 @@ export const tweets = mysqlTable('tweets', {
   createdAt: date('created_at').notNull(),
 })
 
-export const tweetsRelations = relations(tweets, ({many}) => ({
-  tags: many(tagsToTweets),
+export const tweetsRelations = relations(tweet, ({many}) => ({
+  tags: many(tweetWithTag),
 }))
 
-export const tags = mysqlTable('tags', {
+export const tag = mysqlTable('tag', {
   id: serial('tag_id').primaryKey().notNull(),
   name: varchar('name', {length: 255}).notNull(),
   color: mysqlEnum('color', ['red', 'green', 'blue', 'yellow']).notNull(),
 })
 
-export const tagsRelations = relations(tags, ({many}) => ({
-  tweets: many(tagsToTweets),
+export const tagsRelations = relations(tag, ({many}) => ({
+  tweets: many(tweetWithTag),
 }))
 
-export const tagsToTweets = mysqlTable(
-  'tags_to_tweets',
+export const tweetWithTag = mysqlTable(
+  'tweetWithTag',
   {
     tweetId: int('tweet_id').notNull(),
     tagId: int('tag_id').notNull(),
@@ -43,13 +43,13 @@ export const tagsToTweets = mysqlTable(
   })
 )
 
-export const tagsToTweetsRelations = relations(tagsToTweets, ({one}) => ({
-  tweet: one(tweets, {
-    fields: [tagsToTweets.tweetId],
-    references: [tweets.id],
+export const tweetWithTagsRelations = relations(tweetWithTag, ({one}) => ({
+  tweet: one(tweet, {
+    fields: [tweetWithTag.tweetId],
+    references: [tweet.id],
   }),
-  tag: one(tags, {
-    fields: [tagsToTweets.tagId],
-    references: [tags.id],
+  tag: one(tag, {
+    fields: [tweetWithTag.tagId],
+    references: [tag.id],
   }),
 }))
