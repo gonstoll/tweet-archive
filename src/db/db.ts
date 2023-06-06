@@ -50,21 +50,11 @@ function getUserTweet(
   }, [])
 }
 
-export async function getTweetsByQuery(query = '') {
+export async function getTweets(search = '') {
   const tweetWithTags = await db
     .select()
     .from(schema.tweetWithTag)
-    .where(like(schema.tweet.description, `%${query}%`))
-    .rightJoin(schema.tweet, eq(schema.tweetWithTag.tweetId, schema.tweet.id))
-    .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
-
-  return getUserTweet(tweetWithTags)
-}
-
-export async function getTweets() {
-  const tweetWithTags = await db
-    .select()
-    .from(schema.tweetWithTag)
+    .where(like(schema.tweet.description, `%${search}%`))
     .rightJoin(schema.tweet, eq(schema.tweetWithTag.tweetId, schema.tweet.id))
     .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
 
