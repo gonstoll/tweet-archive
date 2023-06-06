@@ -7,7 +7,7 @@ import * as schema from './schema'
 type Tweet = InferModel<typeof schema.tweet>
 type Tag = InferModel<typeof schema.tag>
 type TweetWithTag = InferModel<typeof schema.tweetWithTag>
-type UserTweet = Tweet & {tags?: Array<Tag>}
+export type UserTweet = Tweet & {tags?: Array<Tag>}
 
 const connection = connect({
   host: ENV.DATABASE_HOST,
@@ -17,7 +17,7 @@ const connection = connect({
 
 export const db = drizzle(connection, {schema})
 
-function mergeTweetWithTags(
+function getUserTweet(
   rows: Array<{
     tweet: Tweet
     tag: Tag | null
@@ -58,7 +58,7 @@ export async function getTweetsByQuery(query = '') {
     .rightJoin(schema.tweet, eq(schema.tweetWithTag.tweetId, schema.tweet.id))
     .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
 
-  return mergeTweetWithTags(tweetWithTags)
+  return getUserTweet(tweetWithTags)
 }
 
 export async function getTweets() {
@@ -68,5 +68,16 @@ export async function getTweets() {
     .rightJoin(schema.tweet, eq(schema.tweetWithTag.tweetId, schema.tweet.id))
     .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
 
-  return mergeTweetWithTags(tweetWithTags)
+  return getUserTweet(tweetWithTags)
+}
+
+export async function getTweetById(id: string) {
+  const tweetWithTags = await db
+    .select()
+    .from(schema.tweetWithTag)
+    .where(eq(schema.tweet.tweetId, id))
+    .rightJoin(schema.tweet, eq(schema.tweetWithTag.tweetId, schema.tweet.id))
+    .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
+
+  return getUserTweet(tweetWithTags)[0]
 }
