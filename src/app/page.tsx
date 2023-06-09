@@ -7,9 +7,9 @@ import {seedTags} from '~/db/seed'
 export default async function Home({
   searchParams,
 }: {
-  searchParams: {search: string}
+  searchParams: {search: string; tags: string}
 }) {
-  const tweets = await getTweets(searchParams.search)
+  const tweets = await getTweets(searchParams)
   const tags = await getTags()
 
   return (

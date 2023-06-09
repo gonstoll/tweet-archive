@@ -1,5 +1,5 @@
 import {connect} from '@planetscale/database'
-import {InferModel, eq, like} from 'drizzle-orm'
+import {InferModel, eq, inArray, like} from 'drizzle-orm'
 import {drizzle} from 'drizzle-orm/planetscale-serverless'
 import {ENV} from '~/env'
 import * as schema from './schema'
@@ -50,24 +50,48 @@ function getUserTweet(
   }, [])
 }
 
-export async function getTweets(search = '') {
-  const tweetWithTags = await db
-    .select()
-    .from(schema.tweetWithTag)
-    .where(like(schema.tweet.description, `%${search}%`))
-    .rightJoin(schema.tweet, eq(schema.tweetWithTag.tweetId, schema.tweet.id))
-    .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
+export async function getTweets({
+  search = '',
+  tags = '',
+}: {
+  search: string
+  tags: string
+}) {
+  const transformedTags = tags
+    .split(',')
+    .map(tag => tag.trim())
+    .filter(Boolean)
 
-  return getUserTweet(tweetWithTags)
+  // TODO: This is not great, but it works for now. Revist later.
+  if (transformedTags.length) {
+    const tweetWithTags = await db
+      .select()
+      .from(schema.tweetWithTag)
+      .rightJoin(schema.tweet, eq(schema.tweetWithTag.tweetId, schema.tweet.id))
+      .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
+      .where(like(schema.tweet.description, `%${search}%`))
+      .where(inArray(schema.tag.name, transformedTags))
+
+    return getUserTweet(tweetWithTags)
+  } else {
+    const tweetWithTags = await db
+      .select()
+      .from(schema.tweetWithTag)
+      .rightJoin(schema.tweet, eq(schema.tweetWithTag.tweetId, schema.tweet.id))
+      .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
+      .where(like(schema.tweet.description, `%${search}%`))
+
+    return getUserTweet(tweetWithTags)
+  }
 }
 
 export async function getTweetById(id: string) {
   const tweetWithTags = await db
     .select()
     .from(schema.tweetWithTag)
-    .where(eq(schema.tweet.tweetId, id))
     .rightJoin(schema.tweet, eq(schema.tweetWithTag.tweetId, schema.tweet.id))
     .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
+    .where(eq(schema.tweet.tweetId, id))
 
   return getUserTweet(tweetWithTags)[0]
 }

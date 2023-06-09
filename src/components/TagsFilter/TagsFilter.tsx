@@ -9,6 +9,7 @@ import {tagColors} from '~/db/schema'
 import {classNames} from '~/utils/classnames'
 import TagComponent from '../Tag'
 import {handleCreateTag} from './action'
+import {usePathname, useRouter} from 'next/navigation'
 
 type Props = {
   tags: Array<Tag>
@@ -25,17 +26,24 @@ function renderTag(tags: Array<Tag>) {
 }
 
 export default function TagsFilter({tags}: Props) {
-  const combobox = Ariakit.useComboboxStore({resetValueOnHide: true})
+  const combobox = Ariakit.useComboboxStore({
+    setValue: value => combobox.setValue(value.toLowerCase()), // TODO: Dis ok?
+    resetValueOnHide: true,
+  })
   const select = Ariakit.useSelectStore({
     combobox,
     defaultValue: [''],
+    setValue: value => handleFilter(value),
   })
   const comboboxValue = combobox.useState('value')
   const selectValue = select.useState('value')
   const mounted = select.useState('mounted')
 
-  const {mutate, isLoading} = useZact(handleCreateTag)
+  const {replace} = useRouter()
+  const pathname = usePathname()
+  const {mutate, data: newTag} = useZact(handleCreateTag)
 
+  const [isPending, startTransition] = React.useTransition()
   const tagColorRef = React.useRef(
     tagColors[Math.floor(Math.random() * tagColors.length)]
   )
@@ -46,30 +54,40 @@ export default function TagsFilter({tags}: Props) {
   )
   const selectedTags = React.useMemo(() => {
     const filteredTags = tags.filter(tag => selectValue.includes(tag.name))
-    const optimisticTag = {
-      name: comboboxValue.toLowerCase(),
-      color: tagColorRef.current,
-      id: 123,
-    }
-    return isLoading ? [...filteredTags, optimisticTag] : filteredTags
-  }, [tags, comboboxValue, isLoading, selectValue])
+    return newTag ? [...filteredTags, newTag] : filteredTags
+  }, [tags, newTag, selectValue])
 
   const showAddTagBtn =
-    comboboxValue.length > 0 &&
-    matches[0]?.name.toLowerCase() !== comboboxValue.toLowerCase()
+    comboboxValue.length > 0 && matches[0]?.name.toLowerCase() !== comboboxValue
+
+  function handleFilter(tags: Array<string>) {
+    select.setValue(tags)
+    const params = new URLSearchParams(window.location.search)
+
+    if (tags.length) {
+      params.set('tags', tags.join(','))
+    } else {
+      params.delete('tag')
+    }
+
+    startTransition(() => {
+      replace(`${pathname}?${params.toString()}`)
+    })
+  }
 
   function handleOnCreateTag(tagName: string) {
+    combobox.hide()
     const newTag = {
       name: tagName,
       color: tagColorRef.current,
     }
     select.setValue(prevTags => [...prevTags, tagName])
-    combobox.hide()
     mutate(newTag)
       .then(() => combobox.setValue(''))
       .catch(error => {
-        console.log('Error!!', error)
+        combobox.show()
         select.setValue(prevTags => prevTags.filter(t => t !== tagName))
+        throw new Error(error)
       })
   }
 
@@ -124,15 +142,12 @@ export default function TagsFilter({tags}: Props) {
             {showAddTagBtn ? (
               <Ariakit.ComboboxItem
                 className="flex cursor-pointer items-center gap-2 p-2"
-                onClick={() => {
-                  // mutate({name: comboboxValue, color: 'blue'})
-                  handleOnCreateTag(comboboxValue.toLowerCase())
-                }}
+                onClick={() => handleOnCreateTag(comboboxValue)}
               >
                 Create new tag:{' '}
                 <TagComponent
                   tag={{
-                    name: comboboxValue.toLowerCase(),
+                    name: comboboxValue,
                     color: tagColorRef.current,
                   }}
                 />
