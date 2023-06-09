@@ -11,6 +11,7 @@
     "db:push": "drizzle-kit push:mysql"
   },
   "dependencies": {
+    "@ariakit/react": "^0.2.8",
     "@planetscale/database": "^1.7.0",
     "@types/node": "20.2.4",
     "@types/react": "18.2.7",
@@ -19,6 +20,7 @@
     "drizzle-orm": "^0.26.3",
     "eslint": "8.41.0",
     "eslint-config-next": "13.4.4",
+    "match-sorter": "^6.3.1",
     "next": "13.4.4",
     "next-tweet": "^0.8.1",
     "postcss": "8.4.23",

@@ -5,7 +5,7 @@ import {ENV} from '~/env'
 import * as schema from './schema'
 
 type Tweet = InferModel<typeof schema.tweet>
-type Tag = InferModel<typeof schema.tag>
+export type Tag = InferModel<typeof schema.tag>
 type TweetWithTag = InferModel<typeof schema.tweetWithTag>
 export type UserTweet = Tweet & {tags?: Array<Tag>}
 
@@ -70,4 +70,8 @@ export async function getTweetById(id: string) {
     .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
 
   return getUserTweet(tweetWithTags)[0]
+}
+
+export async function getTags() {
+  return await db.select().from(schema.tag)
 }

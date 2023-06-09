@@ -23,21 +23,24 @@ export default function Search() {
   }
 
   return (
-    <form>
-      <div className="relative">
-        <input
-          className="mb-4 w-full rounded-md border-1 border-slate-200 p-2"
-          name="search"
-          id="search"
-          onChange={e => handleSearch(e.currentTarget.value)}
+    <div className="relative">
+      <label htmlFor="search">
+        Search
+      </label>
+      <input
+        type="search"
+        placeholder="Search..."
+        className="mb-4 w-full rounded-md border-1 border-slate-200 p-2"
+        name="search"
+        id="search"
+        onChange={e => handleSearch(e.currentTarget.value)}
+      />
+      {isPending ? (
+        <div
+          className="absolute right-4 top-2 inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"
+          role="status"
         />
-        {isPending ? (
-          <div
-            className="absolute right-4 top-2 inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"
-            role="status"
-          />
-        ) : null}
-      </div>
-    </form>
+      ) : null}
+    </div>
   )
 }
