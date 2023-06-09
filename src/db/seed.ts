@@ -1,6 +1,17 @@
 import {db} from './db'
 import * as schema from './schema'
 
+export async function seedTags() {
+  await db.insert(schema.tag).values([
+    {id: 1, name: 'vercel', color: 'blue'},
+    {id: 2, name: 'react', color: 'green'},
+    {id: 3, name: 'nextjs', color: 'red'},
+    {id: 4, name: 'typescript', color: 'orange'},
+    {id: 5, name: 'RSC', color: 'yellow'},
+    {id: 6, name: 'consistency', color: 'gray'},
+  ])
+}
+
 export async function seed() {
   await db.insert(schema.tweet).values([
     {
@@ -36,9 +47,9 @@ export async function seed() {
     {id: 1, name: 'vercel', color: 'blue'},
     {id: 2, name: 'react', color: 'green'},
     {id: 3, name: 'nextjs', color: 'red'},
-    {id: 4, name: 'typescript', color: 'blue'},
+    {id: 4, name: 'typescript', color: 'orange'},
     {id: 5, name: 'RSC', color: 'yellow'},
-    {id: 6, name: 'consistency', color: 'yellow'},
+    {id: 6, name: 'consistency', color: 'gray'},
   ])
   await db.insert(schema.tweetWithTag).values([
     {tweetId: 1, tagId: 2},

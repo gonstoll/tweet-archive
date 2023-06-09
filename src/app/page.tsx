@@ -2,6 +2,7 @@ import Search from '~/components/Search'
 import TagsFilter from '~/components/TagsFilter/TagsFilter'
 import Tweet from '~/components/Tweet'
 import {getTags, getTweets} from '~/db/db'
+import {seedTags} from '~/db/seed'
 
 export default async function Home({
   searchParams,

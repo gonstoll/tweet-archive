@@ -24,13 +24,11 @@ export default function Search() {
 
   return (
     <div className="relative">
-      <label htmlFor="search">
-        Search
-      </label>
+      <label htmlFor="search">Search</label>
       <input
         type="search"
         placeholder="Search..."
-        className="mb-4 w-full rounded-md border-1 border-slate-200 p-2"
+        className="mb-4 h-11 w-full rounded-md border-1 border-slate-200 p-2"
         name="search"
         id="search"
         onChange={e => handleSearch(e.currentTarget.value)}

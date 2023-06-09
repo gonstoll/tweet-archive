@@ -10,6 +10,18 @@ import {
   varchar,
 } from 'drizzle-orm/mysql-core'
 
+export const tagColors = [
+  'red',
+  'green',
+  'blue',
+  'yellow',
+  'gray',
+  'brown',
+  'orange',
+  'purple',
+  'pink',
+] as const
+
 export const tweet = mysqlTable('tweet', {
   id: serial('id').primaryKey().notNull(),
   tweetId: varchar('tweet_id', {length: 30}).notNull(),
@@ -25,7 +37,7 @@ export const tweetsRelations = relations(tweet, ({many}) => ({
 export const tag = mysqlTable('tag', {
   id: serial('tag_id').primaryKey().notNull(),
   name: varchar('name', {length: 255}).notNull(),
-  color: mysqlEnum('color', ['red', 'green', 'blue', 'yellow']).notNull(),
+  color: mysqlEnum('color', tagColors).notNull(),
 })
 
 export const tagsRelations = relations(tag, ({many}) => ({
