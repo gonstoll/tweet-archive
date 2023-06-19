@@ -1,5 +1,5 @@
 import {connect} from '@planetscale/database'
-import {InferModel, eq, inArray, like} from 'drizzle-orm'
+import {InferModel, and, eq, inArray, like, or} from 'drizzle-orm'
 import {drizzle} from 'drizzle-orm/planetscale-serverless'
 import {ENV} from '~/env'
 import * as schema from './schema'
@@ -19,7 +19,7 @@ export const db = drizzle(connection, {schema})
 
 function getUserTweet(
   rows: Array<{
-    tweet: Tweet
+    tweet: Tweet | null
     tag: Tag | null
     tweetWithTag: TweetWithTag | null
   }>
@@ -27,6 +27,8 @@ function getUserTweet(
   return rows.reduce<Array<UserTweet>>((acc, row) => {
     const {tweet, tag, tweetWithTag} = row
     const storedTweet = acc.find(t => t.id === tweetWithTag?.tweetId)
+
+    if (!tweet) return acc
 
     // If there is a tweet already in the array, push the new tag to its tags array
     if (storedTweet && tag) {
@@ -62,27 +64,29 @@ export async function getTweets({
     .map(tag => tag.trim())
     .filter(Boolean)
 
-  // TODO: This is not great, but it works for now. Revist later.
-  if (transformedTags.length) {
-    const tweetWithTags = await db
-      .select()
-      .from(schema.tweetWithTag)
-      .rightJoin(schema.tweet, eq(schema.tweetWithTag.tweetId, schema.tweet.id))
-      .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
-      .where(like(schema.tweet.description, `%${search}%`))
-      .where(inArray(schema.tag.name, transformedTags))
+  const tweetWithTags = await db
+    .select()
+    .from(schema.tweet)
+    .where(like(schema.tweet.description, `%${search}%`))
+    .leftJoin(
+      schema.tweetWithTag,
+      eq(schema.tweetWithTag.tweetId, schema.tweet.id)
+    )
+    .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
 
-    return getUserTweet(tweetWithTags)
-  } else {
-    const tweetWithTags = await db
-      .select()
-      .from(schema.tweetWithTag)
-      .rightJoin(schema.tweet, eq(schema.tweetWithTag.tweetId, schema.tweet.id))
-      .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
-      .where(like(schema.tweet.description, `%${search}%`))
+  const userTweets = getUserTweet(tweetWithTags)
 
-    return getUserTweet(tweetWithTags)
-  }
+  if (!transformedTags.length) return userTweets
+
+  const filteredTweets = userTweets.filter(tweet => {
+    const tweetTags = tweet.tags?.map(tag => tag.name)
+    if (!tweetTags) return false
+    return tweetTags.length
+      ? transformedTags.every(tag => tweetTags.includes(tag))
+      : false
+  })
+
+  return filteredTweets
 }
 
 export async function getTweetById(id: string) {
