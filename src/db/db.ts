@@ -67,26 +67,22 @@ export async function getTweets({
   const tweetWithTags = await db
     .select()
     .from(schema.tweet)
-    .where(like(schema.tweet.description, `%${search}%`))
     .leftJoin(
       schema.tweetWithTag,
       eq(schema.tweetWithTag.tweetId, schema.tweet.id)
     )
     .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
+    .where(({tweet, tag}) => {
+      if (transformedTags.length) {
+        return and(
+          inArray(tag.name, transformedTags),
+          like(tweet.description, `%${search}%`)
+        )
+      }
+      return like(tweet.description, `%${search}%`)
+    })
 
-  const userTweets = getUserTweet(tweetWithTags)
-
-  if (!transformedTags.length) return userTweets
-
-  const filteredTweets = userTweets.filter(tweet => {
-    const tweetTags = tweet.tags?.map(tag => tag.name)
-    if (!tweetTags) return false
-    return tweetTags.length
-      ? transformedTags.every(tag => tweetTags.includes(tag))
-      : false
-  })
-
-  return filteredTweets
+  return getUserTweet(tweetWithTags)
 }
 
 export async function getTweetById(id: string) {
