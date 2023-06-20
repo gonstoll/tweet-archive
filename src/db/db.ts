@@ -1,12 +1,11 @@
 import {connect} from '@planetscale/database'
-import {InferModel, and, exists, inArray, like, sql} from 'drizzle-orm'
+import {InferModel, and, exists, inArray, like} from 'drizzle-orm'
 import {drizzle} from 'drizzle-orm/planetscale-serverless'
 import {ENV} from '~/env'
 import * as schema from './schema'
 
 type Tweet = InferModel<typeof schema.tweet>
 export type Tag = InferModel<typeof schema.tag>
-type TweetWithTag = InferModel<typeof schema.tweetsToTags>
 export type UserTweet = Tweet & {tags?: Array<Tag>}
 
 const connection = connect({
@@ -16,41 +15,6 @@ const connection = connect({
 })
 
 export const db = drizzle(connection, {schema})
-
-function getUserTweet(
-  rows: Array<{
-    tweet: Tweet | null
-    tag: Tag | null
-    tweetWithTag: TweetWithTag | null
-  }>
-) {
-  return rows.reduce<Array<UserTweet>>((acc, row) => {
-    const {tweet, tag, tweetWithTag} = row
-    const storedTweet = acc.find(t => t.id === tweetWithTag?.tweetId)
-
-    if (!tweet) return acc
-
-    // If there is a tweet already in the array, push the new tag to its tags array
-    if (storedTweet && tag) {
-      storedTweet.tags?.push(tag)
-    }
-
-    // If the tweet is not in the array, push it with the tag
-    if (!storedTweet && tag) {
-      acc.push({
-        ...tweet,
-        tags: [tag],
-      })
-    }
-
-    // If the tweet is not in the array and there is no tag, push it without the tag
-    if (!storedTweet && !tag) {
-      acc.push(tweet)
-    }
-
-    return acc
-  }, [])
-}
 
 export async function getTweets({
   search = '',
@@ -64,72 +28,19 @@ export async function getTweets({
     .map(tag => tag.trim())
     .filter(Boolean)
 
-  // const relevantTweetIds = await db.query.tweet.findMany({
-  //   where: ({tags}) => inArray(),
-  // })
-
-  // const tweets = await db.query.tweet.findMany({
-  //   // where: ({description}) => like(description, `%${search}%`),
-  //   where: (tweet, {and}) => {
-  //     if (transformedTags.length) {
-  //       return and(like(tweet.description, `%${search}%`))
-  //     }
-  //   },
-  //   with: {
-  //     tweetsToTags: {
-  //       where: (tweetsToTags, {eq}) => {
-  //         return exists(
-  //           db
-  //             .select()
-  //             .from(schema.tag)
-  //             .where(({name}) => {
-  //               if (transformedTags.length) {
-  //                 return and(
-  //                   inArray(schema.tag.name, transformedTags),
-  //                   eq(tweetsToTags.tagId, schema.tag.id)
-  //                 )
-  //               }
-  //             })
-  //         )
-  //       },
-  //     },
-  //   },
-  // })
-
-  // console.dir(tweets, {depth: null})
-
-  // const tweetWithTags = await db
-  //   .select()
-  //   .from(schema.tweet)
-  //   .leftJoin(
-  //     schema.tweetWithTag,
-  //     eq(schema.tweetWithTag.tweetId, schema.tweet.id)
-  //   )
-  //   .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
-  //   .where(({tweet, tag}) => {
-  //     // if (transformedTags.length) {
-  //     //   return and(
-  //     //     inArray(tag.name, transformedTags),
-  //     //     like(tweet.description, `%${search}%`)
-  //     //   )
-  //     // }
-  //     return like(tweet.description, `%${search}%`)
-  //   })
-
-  // return getUserTweet(tweetWithTags)
-
-  const result = await db.query.tweet.findMany({
-    where: (tweets, {and, sql}) =>
-      and(
+  const filteredTweetsQuery = await db.query.tweet.findMany({
+    where: (tweets, {and, sql}) => {
+      return and(
         transformedTags.length
           ? sql`json_length(${tweets.tweetsToTags}) > 0`
           : undefined,
         like(tweets.description, `%${search}%`)
-      ),
+      )
+    },
     with: {
       tweetsToTags: {
-        where: (tweetsToTags, {eq}) =>
-          exists(
+        where: (tweetsToTags, {eq}) => {
+          return exists(
             db
               .select()
               .from(schema.tag)
@@ -141,21 +52,15 @@ export async function getTweets({
                   )
                 }
               })
-          ),
+          )
+        },
       },
     },
   })
 
-  console.dir(result, {depth: null})
+  const filteredTweetsIds = filteredTweetsQuery.map(t => t.id) ?? []
 
-  const relevantIds = result?.map(x => x.id)
-
-  if (result.length === 0) {
-    return []
-  }
-
-  // get tweets with tags
-  const relevantTweets = await db.query.tweet.findMany({
+  const filteredTweetsWithTags = await db.query.tweet.findMany({
     with: {
       tweetsToTags: {
         with: {
@@ -163,37 +68,22 @@ export async function getTweets({
         },
       },
     },
-    where: (tweets, {}) => inArray(tweets.id, relevantIds),
+    where: tweets => inArray(tweets.id, filteredTweetsIds),
   })
 
-  return toTweets(relevantTweets) // shape, flatten, map etc..
-}
+  const tweets: Array<UserTweet> = []
 
-function toTweets(relevantTweets: any[]) {
-  const tweets: UserTweet[] = []
-
-  for (const tweet of relevantTweets) {
-    const tags = (tweet.tweetsToTags as any[]).flatMap(x => x.tag)
+  for (const {tweetsToTags, ...tweet} of filteredTweetsWithTags) {
+    const tags = tweetsToTags.map(t => t.tag)
     tweets.push({
       ...tweet,
-      tags: tags,
+      tags,
     })
   }
 
   return tweets
 }
 
-// export async function getTweetById(id: string) {
-//   const tweetWithTags = await db
-//     .select()
-//     .from(schema.tweetWithTag)
-//     .rightJoin(schema.tweet, eq(schema.tweetWithTag.tweetId, schema.tweet.id))
-//     .leftJoin(schema.tag, eq(schema.tweetWithTag.tagId, schema.tag.id))
-//     .where(eq(schema.tweet.tweetId, id))
-
-//   return getUserTweet(tweetWithTags)[0]
-// }
-
 export async function getTags() {
-  return await db.select().from(schema.tag)
+  return await db.query.tag.findMany()
 }

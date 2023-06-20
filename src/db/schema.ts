@@ -16,7 +16,6 @@ export const tagColors = [
   'blue',
   'yellow',
   'gray',
-  'brown',
   'orange',
   'purple',
   'pink',
