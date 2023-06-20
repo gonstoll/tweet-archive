@@ -29,6 +29,9 @@ export async function getTweets({
     .filter(Boolean)
 
   const filteredTweetsQuery = await db.query.tweet.findMany({
+    columns: {
+      id: true,
+    },
     where: (tweets, {and, sql}) => {
       return and(
         transformedTags.length
@@ -58,7 +61,11 @@ export async function getTweets({
     },
   })
 
-  const filteredTweetsIds = filteredTweetsQuery.map(t => t.id) ?? []
+  const filteredTweetsIds = filteredTweetsQuery.map(t => t.id)
+
+  if (!filteredTweetsIds.length) {
+    return []
+  }
 
   const filteredTweetsWithTags = await db.query.tweet.findMany({
     with: {
@@ -71,17 +78,43 @@ export async function getTweets({
     where: tweets => inArray(tweets.id, filteredTweetsIds),
   })
 
-  const tweets: Array<UserTweet> = []
+  const userTweets: Array<UserTweet> = []
 
-  for (const {tweetsToTags, ...tweet} of filteredTweetsWithTags) {
+  for (const {tweetsToTags, ...userTweet} of filteredTweetsWithTags) {
     const tags = tweetsToTags.map(t => t.tag)
-    tweets.push({
-      ...tweet,
+    userTweets.push({
+      ...userTweet,
       tags,
     })
   }
 
-  return tweets
+  return userTweets
+}
+
+export async function getTweetById(id: string) {
+  const tweet = await db.query.tweet.findFirst({
+    where: (tweets, {eq}) => eq(tweets.id, Number(id)),
+    with: {
+      tweetsToTags: {
+        with: {
+          tag: true,
+        },
+      },
+    },
+  })
+
+  if (!tweet) {
+    return null
+  }
+
+  const tags = tweet.tweetsToTags.map(t => t.tag)
+
+  const {tweetsToTags, ...userTweet} = tweet
+
+  return {
+    ...userTweet,
+    tags,
+  }
 }
 
 export async function getTags() {
