@@ -49,14 +49,12 @@ export async function seed() {
     {id: 3, name: 'nextjs', color: 'red'},
     {id: 4, name: 'typescript', color: 'orange'},
     {id: 5, name: 'RSC', color: 'yellow'},
-    {id: 6, name: 'consistency', color: 'gray'},
   ])
-  await db.insert(schema.tweetWithTag).values([
+  await db.insert(schema.tweetsToTags).values([
     {tweetId: 1, tagId: 2},
     {tweetId: 1, tagId: 5},
     {tweetId: 2, tagId: 1},
     {tweetId: 2, tagId: 3},
-    {tweetId: 3, tagId: 6},
     {tweetId: 4, tagId: 4},
   ])
 }

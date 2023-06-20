@@ -30,8 +30,8 @@ export const tweet = mysqlTable('tweet', {
   createdAt: date('created_at').notNull(),
 })
 
-export const tweetsRelations = relations(tweet, ({many}) => ({
-  tags: many(tweetWithTag),
+export const tweetRelations = relations(tweet, ({many}) => ({
+  tweetsToTags: many(tweetsToTags),
 }))
 
 export const tag = mysqlTable('tag', {
@@ -41,11 +41,11 @@ export const tag = mysqlTable('tag', {
 })
 
 export const tagsRelations = relations(tag, ({many}) => ({
-  tweets: many(tweetWithTag),
+  tweetsToTags: many(tweetsToTags),
 }))
 
-export const tweetWithTag = mysqlTable(
-  'tweetWithTag',
+export const tweetsToTags = mysqlTable(
+  'tweet_tag',
   {
     tweetId: int('tweet_id').notNull(),
     tagId: int('tag_id').notNull(),
@@ -55,13 +55,13 @@ export const tweetWithTag = mysqlTable(
   })
 )
 
-export const tweetWithTagsRelations = relations(tweetWithTag, ({one}) => ({
+export const tweetWithTagsRelations = relations(tweetsToTags, ({one}) => ({
   tweet: one(tweet, {
-    fields: [tweetWithTag.tweetId],
+    fields: [tweetsToTags.tweetId],
     references: [tweet.id],
   }),
   tag: one(tag, {
-    fields: [tweetWithTag.tagId],
+    fields: [tweetsToTags.tagId],
     references: [tag.id],
   }),
 }))
