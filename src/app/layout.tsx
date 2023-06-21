@@ -1,8 +1,9 @@
+import {ClerkProvider, UserButton, auth} from '@clerk/nextjs'
 import {Inter} from 'next/font/google'
 import * as React from 'react'
-import {classNames} from '~/utils/classnames'
-import '~/styles/globals.css'
 import '~/env'
+import '~/styles/globals.css'
+import {classNames} from '~/utils/classnames'
 
 const inter = Inter({subsets: ['latin']})
 
@@ -15,12 +16,43 @@ export default function RootLayout({
   children,
   modal,
 }: React.PropsWithChildren<{modal: React.ReactNode}>) {
+  const user = auth()
+  const isSignedIn = Boolean(user.userId)
+
   return (
-    <html lang="en">
-      <body className={classNames(inter.className, 'p-10')}>
-        {modal}
-        {children}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className="h-full">
+        <body className={classNames(inter.className, 'flex h-full flex-col')}>
+          <header>
+            <div className="flex items-center justify-between border-b-1 border-b-slate-200 px-10 py-4">
+              <h1 className="text-lg font-bold">Tweet archive</h1>
+              <UserButton
+                showName
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    userButtonOuterIdentifier: {
+                      fontWeight: 400,
+                      fontSize: '0.875rem',
+                    },
+                    userButtonPopoverFooter: {
+                      display: 'none',
+                    },
+                  },
+                }}
+              />
+            </div>
+          </header>
+          <main
+            className={classNames('p-10', {
+              'flex flex-1 items-center justify-center': !isSignedIn,
+            })}
+          >
+            {modal}
+            <div className="mx-auto max-w-xl md:max-w-8xl">{children}</div>
+          </main>
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

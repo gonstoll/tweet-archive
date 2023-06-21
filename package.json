@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ariakit/react": "^0.2.8",
+    "@clerk/nextjs": "^4.21.8",
     "@planetscale/database": "^1.7.0",
     "@types/node": "20.2.4",
     "@types/react": "18.2.7",
