@@ -13,7 +13,7 @@ const colors = {
   pink: 'bg-pink-200',
 } satisfies Record<(typeof tagColors)[number], string>
 
-export default function Tag({tag}: {tag: Omit<Tag, 'id'>}) {
+export function Tag({tag}: {tag: Omit<Tag, 'id'>}) {
   return (
     <span
       className={classNames(

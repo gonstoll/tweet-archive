@@ -1,8 +1,7 @@
-import Search from '~/components/Search'
-import TagsFilter from '~/components/TagsFilter/TagsFilter'
-import Tweet from '~/components/Tweet'
+import {Search} from '~/components/search'
+import {TagsFilter} from '~/components/tags-filter'
+import {Tweet} from '~/components/tweet'
 import {getTags, getTweets} from '~/db/db'
-import {seedTags} from '~/db/seed'
 
 export default async function Home({
   searchParams,
@@ -16,7 +15,9 @@ export default async function Home({
     <>
       <div className="flex items-center gap-4">
         <TagsFilter tags={tags} />
-        <Search />
+        <div className="flex-1">
+          <Search />
+        </div>
       </div>
       <div className="flex justify-center">
         <div className="gap-4 lg:columns-2 xl:columns-3">

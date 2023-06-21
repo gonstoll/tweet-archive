@@ -1,4 +1,4 @@
-import Tweet from '~/components/Tweet'
+import {Tweet} from '~/components/tweet'
 import {getTweetById} from '~/db/db'
 
 export default async function TweetDetail({params}: {params: {id: string}}) {

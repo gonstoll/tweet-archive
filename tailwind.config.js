@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+
 module.exports = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -13,8 +14,8 @@ module.exports = {
       },
       gridTemplateColumns: {
         'tweet-md': 'repeat(2, minmax(250px, 550px))',
-        'tweet-xl': 'repeat(3, minmax(250px, 550px))'
-      }
+        'tweet-xl': 'repeat(3, minmax(250px, 550px))',
+      },
     },
   },
   plugins: [],

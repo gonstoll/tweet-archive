@@ -1,8 +1,8 @@
 import {NextTweet} from 'next-tweet'
 import {UserTweet} from '~/db/db'
-import Tag from './Tag'
+import {Tag} from './tag'
 
-export default function Tweet({tweet}: {tweet?: UserTweet}) {
+export function Tweet({tweet}: {tweet?: UserTweet}) {
   return tweet ? (
     <div
       key={tweet.id}

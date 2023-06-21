@@ -2,14 +2,15 @@
 
 import * as Ariakit from '@ariakit/react'
 import {matchSorter} from 'match-sorter'
+import {usePathname, useRouter} from 'next/navigation'
 import * as React from 'react'
 import {useZact} from 'zact/client'
 import type {Tag} from '~/db/db'
 import {tagColors} from '~/db/schema'
 import {classNames} from '~/utils/classnames'
-import TagComponent from '../Tag'
+import {getSearchParams} from '~/utils/get-search-params'
+import {Tag as TagComponent} from '../tag'
 import {handleCreateTag} from './action'
-import {usePathname, useRouter} from 'next/navigation'
 
 type Props = {
   tags: Array<Tag>
@@ -25,29 +26,29 @@ function renderTag(tags: Array<Tag>) {
   )
 }
 
-export default function TagsFilter({tags}: Props) {
+export function TagsFilter({tags}: Props) {
   const combobox = Ariakit.useComboboxStore({
-    setValue: value => combobox.setValue(value.toLowerCase()), // TODO: Dis ok?
     resetValueOnHide: true,
   })
   const select = Ariakit.useSelectStore({
     combobox,
     defaultValue: [''],
     setValue: value => handleFilter(value),
+    animated: true,
   })
   const comboboxValue = combobox.useState('value')
   const selectValue = select.useState('value')
   const mounted = select.useState('mounted')
 
-  const {replace} = useRouter()
+  const router = useRouter()
   const pathname = usePathname()
   const {mutate, data: newTag} = useZact(handleCreateTag)
 
   const [isPending, startTransition] = React.useTransition()
+  const deferredValue = React.useDeferredValue(comboboxValue)
   const tagColorRef = React.useRef(
     tagColors[Math.floor(Math.random() * tagColors.length)]
   )
-  const deferredValue = React.useDeferredValue(comboboxValue)
   const matches = React.useMemo(
     () => matchSorter(tags, deferredValue, {keys: ['name']}),
     [tags, deferredValue]
@@ -58,20 +59,25 @@ export default function TagsFilter({tags}: Props) {
   }, [tags, newTag, selectValue])
 
   const showAddTagBtn =
-    comboboxValue.length > 0 && matches[0]?.name.toLowerCase() !== comboboxValue
+    comboboxValue.length > 0 &&
+    matches[0]?.name.toLowerCase() !== comboboxValue.toLowerCase()
 
   function handleFilter(tags: Array<string>) {
     select.setValue(tags)
-    const params = new URLSearchParams(window.location.search)
 
-    if (tags.length) {
-      params.set('tags', tags.join(','))
+    const params = new URLSearchParams(window.location.search)
+    const filteredTags = tags.filter(Boolean)
+
+    params.delete('tags')
+
+    if (filteredTags.length) {
+      params.set('tags', filteredTags.join(','))
     } else {
-      params.delete('tag')
+      params.delete('tags')
     }
 
     startTransition(() => {
-      replace(`${pathname}?${params.toString()}`)
+      router.replace(`${pathname}?${getSearchParams(params)}`)
     })
   }
 
@@ -94,25 +100,34 @@ export default function TagsFilter({tags}: Props) {
   return (
     <div>
       <Ariakit.SelectLabel store={select}>Tags</Ariakit.SelectLabel>
-      <Ariakit.Select
-        store={select}
-        className={classNames(
-          'mb-4 flex h-11 w-96 items-center gap-1 whitespace-nowrap rounded-md border-1 border-slate-200 p-2',
-          {
-            'justify-between': selectedTags.length > 0,
-            'justify-end': selectedTags.length === 0,
-          }
-        )}
-      >
-        {renderTag(selectedTags)}
-        <Ariakit.SelectArrow />
-      </Ariakit.Select>
+      <div className="relative">
+        <Ariakit.Select
+          store={select}
+          className={classNames(
+            'mb-4 flex h-11 w-96 items-center gap-1 whitespace-nowrap rounded-md border-1 border-slate-200 p-2',
+            {
+              'justify-between': selectedTags.length > 0,
+              'justify-end': selectedTags.length === 0,
+            }
+          )}
+        >
+          {renderTag(selectedTags)}
+          <Ariakit.SelectArrow />
+        </Ariakit.Select>
+        {isPending ? (
+          <div
+            className="absolute right-7 top-2 inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"
+            role="status"
+          />
+        ) : null}
+      </div>
       {mounted ? (
         <Ariakit.SelectPopover
+          portal
+          sameWidth
           store={select}
           gutter={4}
-          sameWidth
-          className="relative z-50 flex flex-col overflow-auto overscroll-contain rounded-md border-1 border-slate-300 bg-white"
+          className="relative z-50 flex -translate-y-6 flex-col overflow-auto overscroll-contain rounded-md border-1 border-slate-300 bg-white opacity-0 duration-200 data-[enter]:translate-y-0 data-[enter]:opacity-100"
         >
           <div className="sticky top-0 mb-2 w-full p-2">
             <Ariakit.Combobox

@@ -15,6 +15,7 @@
     "jsx": "preserve",
     "incremental": true,
     "plugins": [{"name": "next"}],
+    "downlevelIteration": true,
     "paths": {
       "~/*": ["./src/*"]
     }
