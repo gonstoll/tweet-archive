@@ -2,7 +2,7 @@
 
 import * as Ariakit from '@ariakit/react'
 import {matchSorter} from 'match-sorter'
-import {usePathname, useRouter} from 'next/navigation'
+import {usePathname, useRouter, useSearchParams} from 'next/navigation'
 import * as React from 'react'
 import {useZact} from 'zact/client'
 import type {Tag} from '~/db/db'
@@ -27,22 +27,23 @@ function renderTag(tags: Array<Tag>) {
 }
 
 export function TagsFilter({tags}: Props) {
+  const params = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const {mutate, data: newTag} = useZact(handleCreateTag)
+
   const combobox = Ariakit.useComboboxStore({
     resetValueOnHide: true,
   })
   const select = Ariakit.useSelectStore({
     combobox,
-    defaultValue: [''],
+    defaultValue: params.get('tags')?.split(',') ?? [''],
     setValue: value => handleFilter(value),
     animated: true,
   })
   const comboboxValue = combobox.useState('value')
   const selectValue = select.useState('value')
   const mounted = select.useState('mounted')
-
-  const router = useRouter()
-  const pathname = usePathname()
-  const {mutate, data: newTag} = useZact(handleCreateTag)
 
   const [isPending, startTransition] = React.useTransition()
   const deferredValue = React.useDeferredValue(comboboxValue)

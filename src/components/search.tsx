@@ -1,13 +1,15 @@
 'use client'
 
-import {usePathname, useRouter} from 'next/navigation'
+import {usePathname, useRouter, useSearchParams} from 'next/navigation'
 import * as React from 'react'
 import {getSearchParams} from '~/utils/get-search-params'
 
 export function Search() {
-  const [isPending, startTransition] = React.useTransition()
   const router = useRouter()
   const pathname = usePathname()
+  const params = useSearchParams()
+
+  const [isPending, startTransition] = React.useTransition()
 
   function handleSearch(term: string) {
     const params = new URLSearchParams(window.location.search)
@@ -34,6 +36,7 @@ export function Search() {
           name="search"
           id="search"
           onChange={e => handleSearch(e.currentTarget.value)}
+          defaultValue={params.get('search') ?? ''}
         />
         {isPending ? (
           <div

@@ -9,6 +9,6 @@ The motivation behind this project is to have a place to store tweets that I fin
   - [x] Date
   - [x] Description (optional)
 - [x] Search through tweets by description text
-- [ ] Filter tweets by tags
+- [x] Filter tweets by tags
 - [ ] Sort tweets by date
 - [ ] Edit tweet entry
