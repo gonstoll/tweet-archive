@@ -19,12 +19,10 @@ export default async function Home({
           <Search />
         </div>
       </div>
-      <div className="flex justify-center">
-        <div className="gap-4 lg:columns-2 xl:columns-3">
-          {tweets.map(t => (
-            <Tweet key={t.id} tweet={t} />
-          ))}
-        </div>
+      <div className="gap-4 md:columns-2 xl:columns-3">
+        {tweets.map(t => (
+          <Tweet key={t.id} tweet={t} />
+        ))}
       </div>
     </>
   )

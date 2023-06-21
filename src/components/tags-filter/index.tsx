@@ -16,7 +16,7 @@ type Props = {
   tags: Array<Tag>
 }
 
-function renderTag(tags: Array<Tag>) {
+function renderTag(tags: Array<Omit<Tag, 'userId'>>) {
   return (
     <div className="flex items-center gap-2 overflow-auto">
       {tags.map(t => (

@@ -3,6 +3,7 @@ import {InferModel, and, exists, inArray, like} from 'drizzle-orm'
 import {drizzle} from 'drizzle-orm/planetscale-serverless'
 import {ENV} from '~/env'
 import * as schema from './schema'
+import {auth} from '@clerk/nextjs'
 
 type Tweet = InferModel<typeof schema.tweet>
 export type Tag = InferModel<typeof schema.tag>
@@ -23,6 +24,12 @@ export async function getTweets({
   search: string
   tags: string
 }) {
+  const {userId} = auth()
+
+  if (!userId) {
+    return []
+  }
+
   const transformedTags = tags
     .split(',')
     .map(tag => tag.trim())
@@ -32,12 +39,13 @@ export async function getTweets({
     columns: {
       id: true,
     },
-    where: (tweets, {and, sql}) => {
+    where: (tweets, {and, sql, eq}) => {
       return and(
         transformedTags.length
           ? sql`json_length(${tweets.tweetsToTags}) > 0`
           : undefined,
-        like(tweets.description, `%${search}%`)
+        like(tweets.description, `%${search}%`),
+        eq(tweets.userId, userId)
       )
     },
     with: {
@@ -75,7 +83,12 @@ export async function getTweets({
         },
       },
     },
-    where: tweets => inArray(tweets.id, filteredTweetsIds),
+    where: (tweets, {eq, and}) => {
+      return and(
+        inArray(tweets.id, filteredTweetsIds),
+        eq(tweets.userId, userId)
+      )
+    },
   })
 
   const userTweets: Array<UserTweet> = []
@@ -118,5 +131,13 @@ export async function getTweetById(id: string) {
 }
 
 export async function getTags() {
-  return await db.query.tag.findMany()
+  const {userId} = auth()
+
+  if (!userId) {
+    return []
+  }
+
+  return await db.query.tag.findMany({
+    where: (tags, {eq}) => eq(tags.userId, userId),
+  })
 }
