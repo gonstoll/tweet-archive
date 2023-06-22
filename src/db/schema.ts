@@ -23,7 +23,6 @@ export const tagColors = [
 
 export const tweet = mysqlTable('tweet', {
   id: serial('id').primaryKey().notNull(),
-  tweetId: varchar('tweet_id', {length: 30}).notNull(),
   description: text('description'),
   url: varchar('url', {length: 2083}).notNull(),
   createdAt: date('created_at').notNull(),
@@ -35,7 +34,7 @@ export const tweetRelations = relations(tweet, ({many}) => ({
 }))
 
 export const tag = mysqlTable('tag', {
-  id: serial('tag_id').primaryKey().notNull(),
+  id: serial('id').primaryKey().notNull(),
   name: varchar('name', {length: 255}).notNull(),
   color: mysqlEnum('color', tagColors).notNull(),
   userId: varchar('user_id', {length: 100}).notNull(),
@@ -50,10 +49,9 @@ export const tweetsToTags = mysqlTable(
   {
     tweetId: int('tweet_id').notNull(),
     tagId: int('tag_id').notNull(),
-    userId: varchar('user_id', {length: 100}).notNull(),
   },
   table => ({
-    primaryKey: primaryKey(table.tweetId, table.tagId, table.userId),
+    primaryKey: primaryKey(table.tweetId, table.tagId),
   })
 )
 

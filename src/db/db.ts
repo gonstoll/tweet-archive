@@ -1,13 +1,13 @@
+import {auth} from '@clerk/nextjs'
 import {connect} from '@planetscale/database'
 import {InferModel, and, exists, inArray, like} from 'drizzle-orm'
 import {drizzle} from 'drizzle-orm/planetscale-serverless'
 import {ENV} from '~/env'
 import * as schema from './schema'
-import {auth} from '@clerk/nextjs'
 
 type Tweet = InferModel<typeof schema.tweet>
 export type Tag = InferModel<typeof schema.tag>
-export type UserTweet = Tweet & {tags?: Array<Tag>}
+export type UserTweet = Tweet & {tags?: Array<Tag>; tweetId: string}
 
 const connection = connect({
   host: ENV.DATABASE_HOST,
@@ -97,6 +97,7 @@ export async function getTweets({
     const tags = tweetsToTags.map(t => t.tag)
     userTweets.push({
       ...userTweet,
+      tweetId: getTweetId(userTweet.url),
       tags,
     })
   }
@@ -140,4 +141,14 @@ export async function getTags() {
   return await db.query.tag.findMany({
     where: (tags, {eq}) => eq(tags.userId, userId),
   })
+}
+
+function getTweetId(tweetUrl: string) {
+  const tweetId = tweetUrl.split('/').pop()
+
+  if (!tweetId) {
+    throw new Error('Invalid tweet URL')
+  }
+
+  return tweetId
 }
