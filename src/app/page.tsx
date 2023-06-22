@@ -1,13 +1,17 @@
+import Link from 'next/link'
 import {Search} from '~/components/search'
 import {TagsFilter} from '~/components/tags-filter'
 import {Tweet} from '~/components/tweet'
 import {getTags, getTweets} from '~/db/db'
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: {search: string; tags: string}
-}) {
+type Props = {
+  searchParams: {
+    search: string
+    tags: string
+  }
+}
+
+export default async function Home({searchParams}: Props) {
   const tweets = await getTweets(searchParams)
   const tags = await getTags()
 
@@ -18,6 +22,7 @@ export default async function Home({
         <div className="flex-1">
           <Search />
         </div>
+        <Link href="tweet/new">Add tweet</Link>
       </div>
       <div className="gap-4 md:columns-2 xl:columns-3">
         {tweets.map(t => (

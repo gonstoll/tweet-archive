@@ -14,9 +14,11 @@ import {handleCreateTag} from './action'
 
 type Props = {
   tags: Array<Tag>
+  isFilter?: boolean
 }
 
 function renderTag(tags: Array<Omit<Tag, 'userId'>>) {
+  if (!tags.length) return <p>Select tags</p>
   return (
     <div className="flex items-center gap-2 overflow-auto">
       {tags.map(t => (
@@ -26,7 +28,7 @@ function renderTag(tags: Array<Omit<Tag, 'userId'>>) {
   )
 }
 
-export function TagsFilter({tags}: Props) {
+export function TagsFilter({tags, isFilter = true}: Props) {
   const params = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -66,6 +68,8 @@ export function TagsFilter({tags}: Props) {
   function handleFilter(tags: Array<string>) {
     select.setValue(tags)
 
+    if (!isFilter) return
+
     const params = new URLSearchParams(window.location.search)
     const filteredTags = tags.filter(Boolean)
 
@@ -104,13 +108,7 @@ export function TagsFilter({tags}: Props) {
       <div className="relative">
         <Ariakit.Select
           store={select}
-          className={classNames(
-            'mb-4 flex h-11 w-96 items-center gap-1 whitespace-nowrap rounded-md border-1 border-slate-200 p-2',
-            {
-              'justify-between': selectedTags.length > 0,
-              'justify-end': selectedTags.length === 0,
-            }
-          )}
+          className="mb-4 flex h-11 w-96 items-center justify-between gap-1 whitespace-nowrap rounded-md border-1 border-slate-200 p-2"
         >
           {renderTag(selectedTags)}
           <Ariakit.SelectArrow />
