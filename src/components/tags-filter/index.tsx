@@ -5,20 +5,26 @@ import {matchSorter} from 'match-sorter'
 import {usePathname, useRouter, useSearchParams} from 'next/navigation'
 import * as React from 'react'
 import {useZact} from 'zact/client'
+import {ZactAction} from 'zact/server'
 import type {Tag} from '~/db/db'
 import {tagColors} from '~/db/schema'
-import {classNames} from '~/utils/classnames'
 import {getSearchParams} from '~/utils/get-search-params'
 import {Tag as TagComponent} from '../tag'
-import {handleCreateTag} from './action'
+import {ZodType} from 'zod'
 
 type Props = {
   tags: Array<Tag>
-  isFilter?: boolean
-}
+  handleCreateTag: ZactAction<ZodType<any>, Omit<Tag, 'userId'>>
+} & (
+  | {type: 'filter'}
+  | {type: 'select'; onChange: (tags: Array<string>) => void}
+)
 
 function renderTag(tags: Array<Omit<Tag, 'userId'>>) {
-  if (!tags.length) return <p>Select tags</p>
+  if (!tags.length) {
+    return <p className="text-gray-400">Select tags</p>
+  }
+
   return (
     <div className="flex items-center gap-2 overflow-auto">
       {tags.map(t => (
@@ -28,7 +34,7 @@ function renderTag(tags: Array<Omit<Tag, 'userId'>>) {
   )
 }
 
-export function TagsFilter({tags, isFilter = true}: Props) {
+export function TagsFilter({tags, handleCreateTag, ...props}: Props) {
   const params = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -39,7 +45,7 @@ export function TagsFilter({tags, isFilter = true}: Props) {
   })
   const select = Ariakit.useSelectStore({
     combobox,
-    defaultValue: params.get('tags')?.split(',') ?? [''],
+    defaultValue: params.get('tags')?.split(',') ?? [],
     setValue: value => handleFilter(value),
     animated: true,
   })
@@ -58,8 +64,9 @@ export function TagsFilter({tags, isFilter = true}: Props) {
   )
   const selectedTags = React.useMemo(() => {
     const filteredTags = tags.filter(tag => selectValue.includes(tag.name))
-    return newTag ? [...filteredTags, newTag] : filteredTags
-  }, [tags, newTag, selectValue])
+    // return newTag ? [...filteredTags, newTag] : filteredTags
+    return filteredTags
+  }, [tags, selectValue])
 
   const showAddTagBtn =
     comboboxValue.length > 0 &&
@@ -68,7 +75,11 @@ export function TagsFilter({tags, isFilter = true}: Props) {
   function handleFilter(tags: Array<string>) {
     select.setValue(tags)
 
-    if (!isFilter) return
+    // If this is a normal select, just return the tags and don't update the URL
+    if (props.type === 'select') {
+      props.onChange(tags)
+      return
+    }
 
     const params = new URLSearchParams(window.location.search)
     const filteredTags = tags.filter(Boolean)
@@ -103,12 +114,12 @@ export function TagsFilter({tags, isFilter = true}: Props) {
   }
 
   return (
-    <div>
+    <div className="w-full">
       <Ariakit.SelectLabel store={select}>Tags</Ariakit.SelectLabel>
       <div className="relative">
         <Ariakit.Select
           store={select}
-          className="mb-4 flex h-11 w-96 items-center justify-between gap-1 whitespace-nowrap rounded-md border-1 border-slate-200 p-2"
+          className="mt-1 flex h-11 w-full items-center justify-between gap-1 whitespace-nowrap rounded-md border-1 border-slate-200 p-2"
         >
           {renderTag(selectedTags)}
           <Ariakit.SelectArrow />
@@ -150,9 +161,6 @@ export function TagsFilter({tags, isFilter = true}: Props) {
                 )}
               />
             ))}
-            {!matches.length ? (
-              <div className="no-results">No results found</div>
-            ) : null}
             {showAddTagBtn ? (
               <Ariakit.ComboboxItem
                 className="flex cursor-pointer items-center gap-2 p-2"

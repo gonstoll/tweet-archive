@@ -1,5 +1,6 @@
 import {ClerkProvider, UserButton, auth} from '@clerk/nextjs'
 import {Inter} from 'next/font/google'
+import Link from 'next/link'
 import * as React from 'react'
 import '~/env'
 import '~/styles/globals.css'
@@ -25,7 +26,9 @@ export default function RootLayout({
         <body className={classNames(inter.className, 'flex h-full flex-col')}>
           <header>
             <div className="flex items-center justify-between border-b-1 border-b-slate-200 px-10 py-4">
-              <h1 className="text-lg font-bold">Tweet archive</h1>
+              <Link href="/">
+                <h1 className="text-lg font-bold">Tweet archive</h1>
+              </Link>
               <UserButton
                 showName
                 afterSignOutUrl="/"

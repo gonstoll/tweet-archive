@@ -122,7 +122,6 @@ export async function getTweetById(id: string) {
   }
 
   const tags = tweet.tweetsToTags.map(t => t.tag)
-
   const {tweetsToTags, ...userTweet} = tweet
 
   return {
@@ -144,9 +143,10 @@ export async function getTags() {
 }
 
 function getTweetId(tweetUrl: string) {
-  const tweetId = tweetUrl.split('/').pop()
+  const tweetId = tweetUrl.split('/').pop()?.split('?').shift()
+  const tweetIdRegex = /^(\d+)$/
 
-  if (!tweetId) {
+  if (!tweetId || !tweetIdRegex.test(tweetId)) {
     throw new Error('Invalid tweet URL')
   }
 

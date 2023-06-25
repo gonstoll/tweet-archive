@@ -3,11 +3,11 @@
 import {auth} from '@clerk/nextjs'
 import {Ratelimit} from '@upstash/ratelimit'
 import {Redis} from '@upstash/redis'
-import {sql} from 'drizzle-orm'
+import {revalidatePath} from 'next/cache'
 import {zact} from 'zact/server'
 import {z} from 'zod'
 import {db} from '~/db/db'
-import {tagColors} from '~/db/schema'
+import {tagColors, tag as tagSchema} from '~/db/schema'
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
@@ -34,8 +34,11 @@ export const handleCreateTag = zact(
     throw new Error('Rate limit exceeded')
   }
 
-  const statement = sql`insert into tag (name,color) values (${tag.name}, ${tag.color});`
-  const res = await db.execute(statement)
-  // revalidatePath('/')
-  return {id: Number(res.insertId), ...tag}
+  const newTag = await db
+    .insert(tagSchema)
+    .values({...tag, userId: user.userId})
+
+  revalidatePath('/')
+
+  return {id: Number(newTag.insertId), ...tag}
 })
