@@ -11,6 +11,6 @@ The motivation behind this project is to have a place to store tweets that I fin
 - [x] Search through tweets by description text
 - [x] Filter tweets by tags
 - [x] Auth
-- [ ] Add a tweet through the UI
+- [x] Add a tweet through the UI
 - [ ] Sort tweets by date
 - [ ] Edit tweet entry
