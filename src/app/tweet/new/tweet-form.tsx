@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import * as React from 'react'
+import {useZact} from 'zact/client'
 import {ZactAction} from 'zact/server'
 import {ZodType, z} from 'zod'
 import {TagsFilter} from '~/components/tags-filter'
@@ -31,11 +32,11 @@ type Props = {
 
 export function TweetForm({tags, handleCreateTweet, handleCreateTag}: Props) {
   const [selectedTags, setSelectedTags] = React.useState<Array<string>>()
-  const [isPending, startTransition] = React.useTransition()
 
+  const {mutate, isLoading} = useZact(handleCreateTweet)
   const router = useRouter()
 
-  function handleSubmit(formData: FormData) {
+  async function handleSubmit(formData: FormData) {
     const url = formData.get('tweet-url')
     const description = formData.get('tweet-description')
     const tweetTags = tags.filter(tag => selectedTags?.includes(tag.name))
@@ -46,11 +47,13 @@ export function TweetForm({tags, handleCreateTweet, handleCreateTag}: Props) {
       tags: tweetTags,
     })
 
-    handleCreateTweet(parsedTweet).then(() => router.replace('/'))
+    await mutate(parsedTweet)
+    router.refresh()
+    router.push('/')
   }
 
   return (
-    <form action={formData => startTransition(() => handleSubmit(formData))}>
+    <form action={handleSubmit}>
       <div className="mb-4">
         <label>
           Tweet URL
@@ -90,7 +93,7 @@ export function TweetForm({tags, handleCreateTweet, handleCreateTag}: Props) {
           type="submit"
           className="flex h-11 items-center justify-center rounded-md bg-slate-300 px-8"
         >
-          {isPending ? 'Adding tweet...' : 'Add tweet'}
+          {isLoading ? 'Adding tweet...' : 'Add tweet'}
         </button>
       </div>
     </form>

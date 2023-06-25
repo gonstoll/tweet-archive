@@ -47,7 +47,7 @@ export const handleCreateTweet = zact(newTweetSchema)(
       .insert(schema.tweet)
       .values({...tweet, userId: user.userId, createdAt: new Date()})
 
-    if (tags) {
+    if (tags?.length) {
       await db
         .insert(schema.tweetsToTags)
         .values(
