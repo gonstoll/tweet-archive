@@ -46,10 +46,7 @@ export function TweetForm({tags, handleCreateTweet, handleCreateTag}: Props) {
       tags: tweetTags,
     })
 
-    handleCreateTweet(parsedTweet).then(d => {
-      console.log('who dis?????', d)
-      router.replace('/')
-    })
+    handleCreateTweet(parsedTweet).then(() => router.replace('/'))
   }
 
   return (
