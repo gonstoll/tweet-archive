@@ -97,8 +97,8 @@ export async function getTweets({
     const tags = tweetsToTags.map(t => t.tag)
     userTweets.push({
       ...userTweet,
-      tweetId: getTweetId(userTweet.url),
       tags,
+      tweetId: getTweetId(userTweet.url),
     })
   }
 
@@ -127,6 +127,7 @@ export async function getTweetById(id: string) {
   return {
     ...userTweet,
     tags,
+    tweetId: getTweetId(userTweet.url),
   }
 }
 
