@@ -1,9 +1,8 @@
 import Link from 'next/link'
 import {Search} from '~/components/search'
 import {TagsFilter} from '~/components/tags-filter'
-import {handleCreateTag} from '~/components/tags-filter/action'
 import {Tweet} from '~/components/tweet'
-import {getTags, getTweets} from '~/db/db'
+import {createTag, getTags, getTweets} from '~/db/db'
 
 type Props = {
   searchParams: {
@@ -20,11 +19,7 @@ export default async function Home({searchParams}: Props) {
     <>
       <div className="mb-4 flex items-center gap-4">
         <div className="w-96">
-          <TagsFilter
-            tags={tags}
-            type="filter"
-            handleCreateTag={handleCreateTag}
-          />
+          <TagsFilter tags={tags} type="filter" createTag={createTag} />
         </div>
         <div className="flex flex-1 items-end gap-4">
           <Search />

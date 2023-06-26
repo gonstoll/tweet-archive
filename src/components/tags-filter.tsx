@@ -4,17 +4,14 @@ import * as Ariakit from '@ariakit/react'
 import {matchSorter} from 'match-sorter'
 import {usePathname, useRouter, useSearchParams} from 'next/navigation'
 import * as React from 'react'
-import {useZact} from 'zact/client'
-import {ZactAction} from 'zact/server'
 import type {Tag} from '~/db/db'
 import {tagColors} from '~/db/schema'
 import {getSearchParams} from '~/utils/get-search-params'
-import {Tag as TagComponent} from '../tag'
-import {ZodType} from 'zod'
+import {Tag as TagComponent} from './tag'
 
 type Props = {
   tags: Array<Tag>
-  handleCreateTag: ZactAction<ZodType<any>, Omit<Tag, 'userId'>>
+  createTag: (tag: Omit<Tag, 'userId' | 'id'>) => Promise<void>
 } & (
   | {type: 'filter'}
   | {type: 'select'; onChange: (tags: Array<string>) => void}
@@ -34,11 +31,10 @@ function renderTag(tags: Array<Omit<Tag, 'userId'>>) {
   )
 }
 
-export function TagsFilter({tags, handleCreateTag, ...props}: Props) {
+export function TagsFilter({tags, createTag, ...props}: Props) {
   const params = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
-  const {mutate, data: newTag} = useZact(handleCreateTag)
 
   const combobox = Ariakit.useComboboxStore({
     resetValueOnHide: true,
@@ -64,7 +60,6 @@ export function TagsFilter({tags, handleCreateTag, ...props}: Props) {
   )
   const selectedTags = React.useMemo(() => {
     const filteredTags = tags.filter(tag => selectValue.includes(tag.name))
-    // return newTag ? [...filteredTags, newTag] : filteredTags
     return filteredTags
   }, [tags, selectValue])
 
@@ -97,20 +92,23 @@ export function TagsFilter({tags, handleCreateTag, ...props}: Props) {
     })
   }
 
-  function handleOnCreateTag(tagName: string) {
+  async function handleOnCreateTag(tagName: string) {
     combobox.hide()
     const newTag = {
       name: tagName,
       color: tagColorRef.current,
     }
     select.setValue(prevTags => [...prevTags, tagName])
-    mutate(newTag)
-      .then(() => combobox.setValue(''))
-      .catch(error => {
-        combobox.show()
-        select.setValue(prevTags => prevTags.filter(t => t !== tagName))
-        throw new Error(error)
-      })
+    try {
+      await createTag(newTag)
+      combobox.setValue('')
+    } catch (error) {
+      combobox.show()
+      select.setValue(prevTags => prevTags.filter(t => t !== tagName))
+      if (error instanceof Error) {
+        throw new Error(error.message)
+      }
+    }
   }
 
   return (

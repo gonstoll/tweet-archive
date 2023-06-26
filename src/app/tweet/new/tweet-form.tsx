@@ -3,37 +3,26 @@
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import * as React from 'react'
-import {useZact} from 'zact/client'
-import {ZactAction} from 'zact/server'
-import {ZodType, z} from 'zod'
+import {z} from 'zod'
 import {TagsFilter} from '~/components/tags-filter'
-import {Tag} from '~/db/db'
-import {tagColors} from '~/db/schema'
+import {Tag, Tweet} from '~/db/db'
 
 export const newTweetSchema = z.object({
   url: z.string(),
-  description: z.string().optional(),
-  tags: z
-    .array(
-      z.object({
-        id: z.number(),
-        name: z.string(),
-        color: z.enum(tagColors),
-      })
-    )
-    .optional(),
+  description: z.string().nullable(),
 })
 
 type Props = {
   tags: Array<Tag>
-  handleCreateTweet: ZactAction<ZodType<any>, void>
-  handleCreateTag: ZactAction<ZodType<any>, Omit<Tag, 'userId'>>
+  createTweet: (
+    tweet: Omit<Tweet, 'id' | 'userId'> & {tags?: Array<Tag>}
+  ) => Promise<void>
+  createTag: (tag: Omit<Tag, 'userId' | 'id'>) => Promise<void>
 }
 
-export function TweetForm({tags, handleCreateTweet, handleCreateTag}: Props) {
+export function TweetForm({tags, createTweet, createTag}: Props) {
   const [selectedTags, setSelectedTags] = React.useState<Array<string>>()
 
-  const {mutate, isLoading} = useZact(handleCreateTweet)
   const router = useRouter()
 
   async function handleSubmit(formData: FormData) {
@@ -44,11 +33,28 @@ export function TweetForm({tags, handleCreateTweet, handleCreateTag}: Props) {
     const parsedTweet = newTweetSchema.parse({
       url,
       description,
-      tags: tweetTags,
     })
 
-    await mutate(parsedTweet)
-    router.refresh()
+    try {
+      await createTweet({
+        ...parsedTweet,
+        tags: tweetTags,
+        createdAt: new Date(),
+      })
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        if (error instanceof z.ZodError) {
+          const {fieldErrors} = error.flatten()
+          const errorMessage = Object.entries(fieldErrors)
+            .map(([field, errors]) =>
+              errors ? `${field}: ${errors.join(', ')}` : field
+            )
+            .join('\n  ')
+          throw new Error(`Something went wrong:\n  ${errorMessage}`)
+        }
+      }
+    }
+
     router.push('/')
   }
 
@@ -80,7 +86,7 @@ export function TweetForm({tags, handleCreateTweet, handleCreateTag}: Props) {
         tags={tags}
         type="select"
         onChange={tags => setSelectedTags(tags)}
-        handleCreateTag={handleCreateTag}
+        createTag={createTag}
       />
       <div className="mt-6 flex items-center justify-end gap-4">
         <Link
@@ -93,7 +99,7 @@ export function TweetForm({tags, handleCreateTweet, handleCreateTag}: Props) {
           type="submit"
           className="flex h-11 items-center justify-center rounded-md bg-slate-300 px-8"
         >
-          {isLoading ? 'Adding tweet...' : 'Add tweet'}
+          Add tweet
         </button>
       </div>
     </form>

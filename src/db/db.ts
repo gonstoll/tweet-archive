@@ -1,11 +1,14 @@
 import {auth} from '@clerk/nextjs'
 import {connect} from '@planetscale/database'
+import {Ratelimit} from '@upstash/ratelimit'
+import {Redis} from '@upstash/redis'
 import {InferModel, and, exists, inArray, like} from 'drizzle-orm'
 import {drizzle} from 'drizzle-orm/planetscale-serverless'
+import {revalidatePath} from 'next/cache'
 import {ENV} from '~/env'
 import * as schema from './schema'
 
-type Tweet = InferModel<typeof schema.tweet>
+export type Tweet = InferModel<typeof schema.tweet>
 export type Tag = InferModel<typeof schema.tag>
 export type UserTweet = Tweet & {tags?: Array<Tag>; tweetId: string}
 
@@ -16,6 +19,12 @@ const connection = connect({
 })
 
 export const db = drizzle(connection, {schema})
+
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(7, '10 s'),
+  analytics: true,
+})
 
 export async function getTweets({
   search = '',
@@ -152,4 +161,55 @@ function getTweetId(tweetUrl: string) {
   }
 
   return tweetId
+}
+
+export async function createTag(tag: Omit<Tag, 'userId' | 'id'>) {
+  'use server'
+  const user = auth()
+
+  if (!user.userId) {
+    throw new Error('User not logged in')
+  }
+
+  const {success} = await ratelimit.limit(user.userId)
+
+  if (!success) {
+    throw new Error('Rate limit exceeded')
+  }
+
+  await db.insert(schema.tag).values({...tag, userId: user.userId})
+
+  revalidatePath('/')
+}
+
+export async function createTweet({
+  tags,
+  ...tweet
+}: Omit<Tweet, 'id' | 'userId'> & {tags?: Array<Tag>}) {
+  'use server'
+  const user = auth()
+
+  if (!user.userId) {
+    throw new Error('User not logged in')
+  }
+
+  const {success} = await ratelimit.limit(user.userId)
+
+  if (!success) {
+    throw new Error('Rate limit exceeded')
+  }
+
+  const newTweet = await db
+    .insert(schema.tweet)
+    .values({...tweet, userId: user.userId})
+
+  if (tags?.length) {
+    await db
+      .insert(schema.tweetsToTags)
+      .values(
+        tags.map(tag => ({tweetId: Number(newTweet.insertId), tagId: tag.id}))
+      )
+  }
+
+  revalidatePath('/')
 }
