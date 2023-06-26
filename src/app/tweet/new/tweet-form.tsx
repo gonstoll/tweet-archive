@@ -16,7 +16,7 @@ type Props = {
   tags: Array<Tag>
   createTweet: (
     tweet: Omit<Tweet, 'id' | 'userId'> & {tags?: Array<Tag>}
-  ) => Promise<void>
+  ) => Promise<{success: boolean}>
   createTag: (tag: Omit<Tag, 'userId' | 'id'>) => Promise<void>
 }
 
@@ -35,27 +35,15 @@ export function TweetForm({tags, createTweet, createTag}: Props) {
       description,
     })
 
-    try {
-      await createTweet({
-        ...parsedTweet,
-        tags: tweetTags,
-        createdAt: new Date(),
-      })
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        if (error instanceof z.ZodError) {
-          const {fieldErrors} = error.flatten()
-          const errorMessage = Object.entries(fieldErrors)
-            .map(([field, errors]) =>
-              errors ? `${field}: ${errors.join(', ')}` : field
-            )
-            .join('\n  ')
-          throw new Error(`Something went wrong:\n  ${errorMessage}`)
-        }
-      }
-    }
+    const {success} = await createTweet({
+      ...parsedTweet,
+      tags: tweetTags,
+      createdAt: new Date(),
+    })
 
-    router.push('/')
+    if (success) {
+      router.push('/')
+    }
   }
 
   return (

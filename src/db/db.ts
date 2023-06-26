@@ -212,4 +212,6 @@ export async function createTweet({
   }
 
   revalidatePath('/')
+
+  return {success: true}
 }
