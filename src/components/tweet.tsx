@@ -1,5 +1,5 @@
 import {NextTweet} from 'next-tweet'
-import {UserTweet} from '~/db/db'
+import {type UserTweet} from '~/db/models/tweet'
 import {Tag} from './tag'
 
 export function Tweet({tweet}: {tweet?: UserTweet}) {

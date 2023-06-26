@@ -2,7 +2,8 @@ import Link from 'next/link'
 import {Search} from '~/components/search'
 import {TagsFilter} from '~/components/tags-filter'
 import {Tweet} from '~/components/tweet'
-import {createTag, getTags, getTweets} from '~/db/db'
+import {createTag, getTags} from '~/db/models/tag'
+import {getTweets} from '~/db/models/tweet'
 
 type Props = {
   searchParams: {
@@ -12,7 +13,6 @@ type Props = {
 }
 
 export default async function Home({searchParams}: Props) {
-  console.log('logging searchParams', searchParams)
   const tweets = await getTweets(searchParams)
   const tags = await getTags()
 

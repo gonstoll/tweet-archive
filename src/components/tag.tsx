@@ -1,4 +1,4 @@
-import {Tag} from '~/db/db'
+import {type Tag} from '~/db/models/tag'
 import {tagColors} from '~/db/schema'
 import {classNames} from '~/utils/classnames'
 

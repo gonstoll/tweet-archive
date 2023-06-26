@@ -5,7 +5,8 @@ import {useRouter} from 'next/navigation'
 import * as React from 'react'
 import {z} from 'zod'
 import {TagsFilter} from '~/components/tags-filter'
-import {Tag, Tweet} from '~/db/db'
+import {type Tag} from '~/db/models/tag'
+import {type Tweet} from '~/db/models/tweet'
 
 export const newTweetSchema = z.object({
   url: z.string(),
