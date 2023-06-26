@@ -12,6 +12,7 @@ type Props = {
 }
 
 export default async function Home({searchParams}: Props) {
+  console.log('logging searchParams', searchParams)
   const tweets = await getTweets(searchParams)
   const tags = await getTags()
 

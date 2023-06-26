@@ -177,9 +177,22 @@ export async function createTag(tag: Omit<Tag, 'userId' | 'id'>) {
     throw new Error('Rate limit exceeded')
   }
 
-  await db.insert(schema.tag).values({...tag, userId: user.userId})
+  const newTag = await db
+    .insert(schema.tag)
+    .values({...tag, userId: user.userId})
 
-  revalidatePath('/')
+  console.log('TAG CREATED')
+
+  // revalidatePath('/')
+
+  return {
+    success: true,
+    newTag: {
+      ...tag,
+      id: Number(newTag.insertId),
+      userId: user.userId,
+    },
+  }
 }
 
 export async function createTweet({

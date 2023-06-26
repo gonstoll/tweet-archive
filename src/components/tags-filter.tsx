@@ -11,7 +11,9 @@ import {Tag as TagComponent} from './tag'
 
 type Props = {
   tags: Array<Tag>
-  createTag: (tag: Omit<Tag, 'userId' | 'id'>) => Promise<void>
+  createTag: (
+    tag: Omit<Tag, 'userId' | 'id'>
+  ) => Promise<{success: boolean; newTag: Tag}>
 } & (
   | {type: 'filter'}
   | {type: 'select'; onChange: (tags: Array<string>) => void}
@@ -49,19 +51,32 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
   const selectValue = select.useState('value')
   const mounted = select.useState('mounted')
 
+  const [newTag, setNewTag] = React.useState<Tag>()
   const [isPending, startTransition] = React.useTransition()
   const deferredValue = React.useDeferredValue(comboboxValue)
+
   const tagColorRef = React.useRef(
     tagColors[Math.floor(Math.random() * tagColors.length)]
   )
-  const matches = React.useMemo(
-    () => matchSorter(tags, deferredValue, {keys: ['name']}),
-    [tags, deferredValue]
-  )
+
+  const matches = React.useMemo(() => {
+    const tagsMap = new Map(tags.map(t => [t.id, t]))
+    if (newTag) {
+      tagsMap.set(newTag.id, newTag)
+    }
+    const tagsArray = Array.from(tagsMap.values())
+    return matchSorter(tagsArray, deferredValue, {keys: ['name']})
+  }, [newTag, tags, deferredValue])
+
   const selectedTags = React.useMemo(() => {
-    const filteredTags = tags.filter(tag => selectValue.includes(tag.name))
+    const tagsMap = new Map(tags.map(t => [t.id, t]))
+    if (newTag) {
+      tagsMap.set(newTag.id, newTag)
+    }
+    const tagsArray = Array.from(tagsMap.values())
+    const filteredTags = tagsArray.filter(tag => selectValue.includes(tag.name))
     return filteredTags
-  }, [tags, selectValue])
+  }, [tags, newTag, selectValue])
 
   const showAddTagBtn =
     comboboxValue.length > 0 &&
@@ -94,13 +109,16 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
 
   async function handleOnCreateTag(tagName: string) {
     combobox.hide()
-    const newTag = {
+    const newTagData = {
       name: tagName,
       color: tagColorRef.current,
     }
     select.setValue(prevTags => [...prevTags, tagName])
     try {
-      await createTag(newTag)
+      const {newTag} = await createTag(newTagData)
+      if (newTag) {
+        setNewTag(newTag)
+      }
       combobox.setValue('')
     } catch (error) {
       combobox.show()

@@ -17,7 +17,9 @@ type Props = {
   createTweet: (
     tweet: Omit<Tweet, 'id' | 'userId'> & {tags?: Array<Tag>}
   ) => Promise<{success: boolean}>
-  createTag: (tag: Omit<Tag, 'userId' | 'id'>) => Promise<void>
+  createTag: (
+    tag: Omit<Tag, 'userId' | 'id'>
+  ) => Promise<{success: boolean; newTag: Tag}>
 }
 
 export function TweetForm({tags, createTweet, createTag}: Props) {
