@@ -39,6 +39,7 @@ export async function createTag(tag: Omit<Tag, 'userId' | 'id'>) {
   // UI. This might be a bug in Nextjs, for now we are disabling revalidation and
   // relying on optimistic updates.
   // revalidatePath('/')
+  // revalidatePath(`/?${currentSearch}`)
 
   return {
     success: true,

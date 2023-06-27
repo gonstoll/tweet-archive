@@ -6,7 +6,7 @@ import {usePathname, useRouter, useSearchParams} from 'next/navigation'
 import * as React from 'react'
 import {type Tag} from '~/db/models/tag'
 import {tagColors} from '~/db/schema'
-import {getSearchParams} from '~/utils/get-search-params'
+import {searchParamsToString} from '~/utils/search-params-to-string'
 import {Tag as TagComponent} from './tag'
 
 type Props = {
@@ -103,17 +103,20 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
     }
 
     startTransition(() => {
-      router.replace(`${pathname}?${getSearchParams(params)}`)
+      router.replace(`${pathname}?${searchParamsToString(params)}`)
     })
   }
 
   async function handleOnCreateTag(tagName: string) {
     combobox.hide()
+
     const newTagData = {
       name: tagName,
       color: tagColorRef.current,
     }
+
     select.setValue(prevTags => [...prevTags, tagName])
+
     try {
       const {newTag} = await createTag(newTagData)
       if (newTag) {
@@ -123,6 +126,7 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
     } catch (error) {
       combobox.show()
       select.setValue(prevTags => prevTags.filter(t => t !== tagName))
+
       if (error instanceof Error) {
         throw new Error(error.message)
       }

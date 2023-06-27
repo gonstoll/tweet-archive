@@ -2,7 +2,7 @@
 
 import {usePathname, useRouter, useSearchParams} from 'next/navigation'
 import * as React from 'react'
-import {getSearchParams} from '~/utils/get-search-params'
+import {searchParamsToString} from '~/utils/search-params-to-string'
 
 export function Search() {
   const router = useRouter()
@@ -21,7 +21,7 @@ export function Search() {
     }
 
     startTransition(() => {
-      router.replace(`${pathname}?${getSearchParams(params)}`)
+      router.replace(`${pathname}?${searchParamsToString(params)}`)
     })
   }
 

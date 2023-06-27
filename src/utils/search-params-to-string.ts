@@ -1,3 +1,3 @@
-export function getSearchParams(params: URLSearchParams) {
+export function searchParamsToString(params: URLSearchParams) {
   return [...params].map(([key, value]) => `${key}=${value}`).join('&')
 }
