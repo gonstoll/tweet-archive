@@ -16,7 +16,7 @@ export const newTweetSchema = z.object({
 type Props = {
   tags: Array<Tag>
   createTweet: (
-    tweet: Omit<Tweet, 'id' | 'userId'> & {tags?: Array<Tag>}
+    tweet: Omit<Tweet, 'id' | 'userId'> & {tagIds?: Array<number>}
   ) => Promise<{success: boolean}>
   createTag: (
     tag: Omit<Tag, 'userId' | 'id'>
@@ -31,7 +31,9 @@ export function TweetForm({tags, createTweet, createTag}: Props) {
   async function handleSubmit(formData: FormData) {
     const url = formData.get('tweet-url')
     const description = formData.get('tweet-description')
-    const tweetTags = tags.filter(tag => selectedTags?.includes(tag.name))
+    const tagIds = tags
+      .filter(tag => selectedTags?.includes(tag.name))
+      .map(t => t.id)
 
     const parsedTweet = newTweetSchema.parse({
       url,
@@ -40,12 +42,12 @@ export function TweetForm({tags, createTweet, createTag}: Props) {
 
     const {success} = await createTweet({
       ...parsedTweet,
-      tags: tweetTags,
+      tagIds,
       createdAt: new Date(),
     })
 
     if (success) {
-      router.push('/')
+      router.replace('/')
     }
   }
 

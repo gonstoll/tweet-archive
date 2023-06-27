@@ -134,9 +134,9 @@ function getTweetId(tweetUrl: string) {
 }
 
 export async function createTweet({
-  tags,
+  tagIds,
   ...tweet
-}: Omit<Tweet, 'id' | 'userId'> & {tags?: Array<Tag>}) {
+}: Omit<Tweet, 'id' | 'userId'> & {tagIds?: Array<number>}) {
   'use server'
   const user = auth()
 
@@ -154,11 +154,11 @@ export async function createTweet({
     .insert(schema.tweet)
     .values({...tweet, userId: user.userId})
 
-  if (tags?.length) {
+  if (tagIds?.length) {
     await db
       .insert(schema.tweetsToTags)
       .values(
-        tags.map(tag => ({tweetId: Number(newTweet.insertId), tagId: tag.id}))
+        tagIds.map(id => ({tweetId: Number(newTweet.insertId), tagId: id}))
       )
   }
 
