@@ -17,7 +17,7 @@ type Props = {
   tags: Array<Tag>
   createTweet: (
     tweet: Omit<Tweet, 'id' | 'userId'> & {tagIds?: Array<number>}
-  ) => Promise<{success: boolean}>
+  ) => Promise<void>
   createTag: (
     tag: Omit<Tag, 'userId' | 'id'>
   ) => Promise<{success: boolean; newTag: Tag}>
@@ -40,15 +40,13 @@ export function TweetForm({tags, createTweet, createTag}: Props) {
       description,
     })
 
-    const {success} = await createTweet({
+    await createTweet({
       ...parsedTweet,
       tagIds,
       createdAt: new Date(),
     })
 
-    if (success) {
-      router.replace('/')
-    }
+    router.push('/')
   }
 
   return (

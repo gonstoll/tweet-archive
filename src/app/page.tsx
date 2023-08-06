@@ -18,8 +18,8 @@ export default async function Home({searchParams}: Props) {
 
   return (
     <>
-      <div className="mb-4 flex items-center gap-4">
-        <div className="w-96">
+      <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center">
+        <div className="lg:w-96">
           <TagsFilter tags={tags} type="filter" createTag={createTag} />
         </div>
         <div className="flex flex-1 items-end gap-4">
