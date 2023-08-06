@@ -118,10 +118,12 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
     select.setValue(prevTags => [...prevTags, tagName])
 
     try {
-      const {newTag} = await createTag(newTagData)
-      if (newTag) {
-        setNewTag(newTag)
-      }
+      startTransition(async () => {
+        const {newTag} = await createTag(newTagData)
+        if (newTag) {
+          setNewTag(newTag)
+        }
+      })
       combobox.setValue('')
     } catch (error) {
       combobox.show()
@@ -157,9 +159,9 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
           sameWidth
           store={select}
           gutter={4}
-          className="relative z-50 flex -translate-y-6 flex-col overflow-auto overscroll-contain rounded-md border-1 border-slate-300 bg-white opacity-0 duration-200 data-[enter]:translate-y-0 data-[enter]:opacity-100"
+          className="relative z-50 flex max-h-72 -translate-y-6 flex-col overflow-auto overscroll-contain rounded-md border-1 border-slate-300 bg-white opacity-0 duration-200 data-[enter]:translate-y-0 data-[enter]:opacity-100"
         >
-          <div className="sticky top-0 mb-2 w-full p-2">
+          <div className="sticky top-0 mb-2 w-full bg-white p-2">
             <Ariakit.Combobox
               store={combobox}
               autoSelect
