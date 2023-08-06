@@ -4,7 +4,6 @@ import {revalidatePath} from 'next/cache'
 import {db, ratelimit} from '../db'
 import * as schema from '../schema'
 import {Tag} from './tag'
-import {redirect} from 'next/navigation'
 
 export type Tweet = InferModel<typeof schema.tweet>
 export type UserTweet = Tweet & {tags?: Array<Tag>; tweetId: string}
