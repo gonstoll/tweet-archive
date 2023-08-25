@@ -19,6 +19,6 @@ body {
   background-color: var(--background-rgb);
 }
 
-.next-tweet-theme {
+.react-tweet-theme {
   margin: 0 !important;
 }
