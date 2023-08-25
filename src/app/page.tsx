@@ -26,9 +26,9 @@ export default async function Home({searchParams}: Props) {
           <Search />
           <Link
             href="tweet/new"
-            className="flex h-11 items-center justify-center whitespace-nowrap rounded-md bg-slate-300 px-8"
+            className="flex h-11 items-center justify-center gap-1 whitespace-nowrap rounded-md bg-slate-300 px-8"
           >
-            Add tweet
+            Add<span className='hidden lg:block'>tweet</span>
           </Link>
         </div>
       </div>

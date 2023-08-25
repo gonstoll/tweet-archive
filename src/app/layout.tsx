@@ -47,7 +47,7 @@ export default function RootLayout({
             </div>
           </header>
           <main
-            className={classNames('p-10', {
+            className={classNames('p-6 lg:p-10', {
               'flex flex-1 items-center justify-center': !isSignedIn,
             })}
           >

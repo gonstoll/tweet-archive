@@ -1,4 +1,4 @@
-import {NextTweet} from 'next-tweet'
+import {Tweet as ReactTweet} from 'react-tweet'
 import {type UserTweet} from '~/db/models/tweet'
 import {Tag} from './tag'
 
@@ -9,12 +9,10 @@ export function Tweet({tweet}: {tweet?: UserTweet}) {
       className="mb-4 break-inside-avoid rounded-md border-1 border-slate-200 p-4"
     >
       <div className="mb-4">
-        <NextTweet id={tweet.tweetId} priority />
+        <ReactTweet id={String(tweet.tweetId)} />
       </div>
       <div className="flex flex-wrap gap-2">
-        {tweet.tags?.map(tag => (
-          <Tag key={tag.id} tag={tag} />
-        ))}
+        {tweet.tags?.map(tag => <Tag key={tag.id} tag={tag} />)}
       </div>
       {tweet.description ? <p className="mt-4">{tweet.description}</p> : null}
       <p className="mt-4 text-xs text-slate-400">
