@@ -28,11 +28,11 @@ export function Search() {
   return (
     <div className="block w-full">
       <label htmlFor="search">Search</label>
-      <div className="relative mt-1">
+      <div className="relative mt-1 flex">
         <input
           type="search"
           placeholder="Search tweets by description"
-          className="h-11 w-full rounded-md border-1 border-slate-200 p-2"
+          className="h-11 w-full flex-1 rounded-md border-1 border-slate-200 p-2"
           name="search"
           id="search"
           onChange={e => handleSearch(e.currentTarget.value)}
