@@ -32,7 +32,7 @@ export function Search() {
         <input
           type="search"
           placeholder="Search tweets by description"
-          className="h-11 w-full flex-1 rounded-md border-1 border-slate-200 p-2"
+          className="h-11 w-full flex-1 appearance-none rounded-md border-1 border-slate-200 bg-white p-2"
           name="search"
           id="search"
           onChange={e => handleSearch(e.currentTarget.value)}
