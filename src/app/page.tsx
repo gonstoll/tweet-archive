@@ -5,6 +5,9 @@ import {Tweet} from '~/components/tweet'
 import {createTag, getTags} from '~/db/models/tag'
 import {getTweets} from '~/db/models/tweet'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 type Props = {
   searchParams: {
     search: string
