@@ -11,9 +11,8 @@ import {Tag as TagComponent} from './tag'
 
 type Props = {
   tags: Array<Tag>
-  createTag(
-    tag: Omit<Tag, 'userId' | 'id'>,
-  ): Promise<{success: boolean; newTag: Tag}>
+  deleteTag(tagId: number): Promise<void>
+  createTag(tag: Omit<Tag, 'userId' | 'id'>): Promise<{newTag: Tag}>
 } & (
   | {type: 'filter'}
   | {type: 'select'; onChange: (tags: Array<string>) => void}
@@ -33,7 +32,7 @@ function renderTag(tags: Array<Omit<Tag, 'userId'>>) {
   )
 }
 
-export function TagsFilter({tags, createTag, ...props}: Props) {
+export function TagsFilter({tags, createTag, deleteTag, ...props}: Props) {
   const params = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -116,7 +115,7 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
     }
 
     select.setValue(prevTags => [...prevTags, tagName])
-
+    // TODO: Figure out how to avoid having the tag selected and the combobox closed when creating a tag
     try {
       startTransition(async () => {
         const {newTag} = await createTag(newTagData)
@@ -133,6 +132,14 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
         throw new Error(error.message)
       }
     }
+  }
+
+  async function handleOnDeleteTag(tagId: number) {
+    await deleteTag(tagId)
+
+    startTransition(() => {
+      router.refresh()
+    })
   }
 
   return (
@@ -174,12 +181,20 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
               <Ariakit.ComboboxItem
                 key={value.id}
                 focusOnHover
-                className="flex cursor-pointer items-center gap-2 p-2"
+                className="flex cursor-pointer items-center gap-2 p-2 relative"
                 render={p => (
-                  <Ariakit.SelectItem {...p} value={value.name}>
-                    <Ariakit.SelectItemCheck />
-                    <TagComponent tag={value} />
-                  </Ariakit.SelectItem>
+                  <div className="flex items-center justify-between pr-2">
+                    <Ariakit.SelectItem {...p} value={value.name}>
+                      <Ariakit.SelectItemCheck />
+                      <TagComponent tag={value} />
+                    </Ariakit.SelectItem>
+                    <button
+                      className="hover:bg-red-300 z-50"
+                      onClick={() => handleOnDeleteTag(value.id)}
+                    >
+                      X
+                    </button>
+                  </div>
                 )}
               />
             ))}

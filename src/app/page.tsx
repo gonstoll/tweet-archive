@@ -1,8 +1,9 @@
+import {revalidatePath} from 'next/cache'
 import Link from 'next/link'
 import {Search} from '~/components/search'
 import {TagsFilter} from '~/components/tags-filter'
 import {Tweet} from '~/components/tweet'
-import {createTag, getTags} from '~/db/models/tag'
+import {createTag, deleteTag, getTags} from '~/db/models/tag'
 import {getTweets} from '~/db/models/tweet'
 
 export const dynamic = 'force-dynamic'
@@ -19,11 +20,22 @@ export default async function Home({searchParams}: Props) {
   const tweets = await getTweets(searchParams)
   const tags = await getTags()
 
+  async function handleDeleteTag(tagId: number) {
+    'use server'
+    await deleteTag(tagId)
+    revalidatePath('/')
+  }
+
   return (
     <>
       <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center">
         <div className="lg:w-96">
-          <TagsFilter tags={tags} type="filter" createTag={createTag} />
+          <TagsFilter
+            tags={tags}
+            type="filter"
+            createTag={createTag}
+            deleteTag={handleDeleteTag}
+          />
         </div>
         <div className="flex flex-1 items-end gap-4">
           <Search />
