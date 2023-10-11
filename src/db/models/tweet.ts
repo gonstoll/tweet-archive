@@ -7,14 +7,12 @@ import {Tag} from './tag'
 
 export type Tweet = InferModel<typeof schema.tweet>
 export type UserTweet = Tweet & {tags?: Array<Tag>; tweetId: string}
-
-export async function getTweets({
-  search = '',
-  tags = '',
-}: {
+type GetTweetsOpts = {
   search: string
   tags: string
-}) {
+}
+
+export async function getTweets({search = '', tags = ''}: GetTweetsOpts) {
   const {userId} = auth()
 
   if (!userId) {
@@ -36,7 +34,7 @@ export async function getTweets({
           ? sql`json_length(${tweets.tweetsToTags}) > 0`
           : undefined,
         like(tweets.description, `%${search}%`),
-        eq(tweets.userId, userId)
+        eq(tweets.userId, userId),
       )
     },
     with: {
@@ -50,10 +48,10 @@ export async function getTweets({
                 if (transformedTags.length) {
                   return and(
                     inArray(schema.tag.name, transformedTags),
-                    eq(tweetsToTags.tagId, schema.tag.id)
+                    eq(tweetsToTags.tagId, schema.tag.id),
                   )
                 }
-              })
+              }),
           )
         },
       },
@@ -77,7 +75,7 @@ export async function getTweets({
     where: (tweets, {eq, and}) => {
       return and(
         inArray(tweets.id, filteredTweetsIds),
-        eq(tweets.userId, userId)
+        eq(tweets.userId, userId),
       )
     },
   })
@@ -138,6 +136,7 @@ export async function createTweet({
   ...tweet
 }: Omit<Tweet, 'id' | 'userId'> & {tagIds?: Array<number>}) {
   'use server'
+
   const user = auth()
 
   if (!user.userId) {
@@ -158,7 +157,7 @@ export async function createTweet({
     await db
       .insert(schema.tweetsToTags)
       .values(
-        tagIds.map(id => ({tweetId: Number(newTweet.insertId), tagId: id}))
+        tagIds.map(id => ({tweetId: Number(newTweet.insertId), tagId: id})),
       )
   }
 

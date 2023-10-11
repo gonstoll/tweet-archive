@@ -15,15 +15,23 @@ export const newTweetSchema = z.object({
 
 type Props = {
   tags: Array<Tag>
-  createTweet: (
-    tweet: Omit<Tweet, 'id' | 'userId'> & {tagIds?: Array<number>}
-  ) => Promise<void>
-  createTag: (
-    tag: Omit<Tag, 'userId' | 'id'>
-  ) => Promise<{success: boolean; newTag: Tag}>
+  /**
+   * Direct import of Server Actions from the Client Component will result in an error
+   * See https://github.com/vercel/next.js/issues/49235#issuecomment-1565799020
+   */
+  handleCreateTweet(
+    tweet: Omit<Tweet, 'id' | 'userId'> & {tagIds?: Array<number>},
+  ): Promise<void>
+  /**
+   * Direct import of Server Actions from the Client Component will result in an error
+   * See https://github.com/vercel/next.js/issues/49235#issuecomment-1565799020
+   */
+  handleCreateTag(
+    tag: Omit<Tag, 'userId' | 'id'>,
+  ): Promise<{success: boolean; newTag: Tag}>
 }
 
-export function TweetForm({tags, createTweet, createTag}: Props) {
+export function TweetForm({tags, handleCreateTweet, handleCreateTag}: Props) {
   const [selectedTags, setSelectedTags] = React.useState<Array<string>>()
 
   const router = useRouter()
@@ -40,13 +48,14 @@ export function TweetForm({tags, createTweet, createTag}: Props) {
       description,
     })
 
-    await createTweet({
+    await handleCreateTweet({
       ...parsedTweet,
       tagIds,
       createdAt: new Date(),
     })
 
     router.push('/')
+    router.refresh()
   }
 
   return (
@@ -77,7 +86,7 @@ export function TweetForm({tags, createTweet, createTag}: Props) {
         tags={tags}
         type="select"
         onChange={tags => setSelectedTags(tags)}
-        createTag={createTag}
+        createTag={handleCreateTag}
       />
       <div className="mt-6 flex items-center justify-end gap-4">
         <Link

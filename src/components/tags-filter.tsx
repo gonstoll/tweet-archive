@@ -11,9 +11,9 @@ import {Tag as TagComponent} from './tag'
 
 type Props = {
   tags: Array<Tag>
-  createTag: (
-    tag: Omit<Tag, 'userId' | 'id'>
-  ) => Promise<{success: boolean; newTag: Tag}>
+  createTag(
+    tag: Omit<Tag, 'userId' | 'id'>,
+  ): Promise<{success: boolean; newTag: Tag}>
 } & (
   | {type: 'filter'}
   | {type: 'select'; onChange: (tags: Array<string>) => void}
@@ -56,7 +56,7 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
   const deferredValue = React.useDeferredValue(comboboxValue)
 
   const tagColorRef = React.useRef(
-    tagColors[Math.floor(Math.random() * tagColors.length)]
+    tagColors[Math.floor(Math.random() * tagColors.length)],
   )
 
   const matches = React.useMemo(() => {
@@ -66,7 +66,7 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
     }
     const tagsArray = Array.from(tagsMap.values())
     return matchSorter(tagsArray, deferredValue, {keys: ['name']})
-  }, [newTag, tags, deferredValue])
+  }, [deferredValue, newTag, tags])
 
   const selectedTags = React.useMemo(() => {
     const tagsMap = new Map(tags.map(t => [t.id, t]))

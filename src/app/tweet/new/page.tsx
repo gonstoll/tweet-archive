@@ -23,8 +23,8 @@ export default async function NewTweet() {
   return (
     <TweetForm
       tags={tags}
-      createTweet={handleCreateTweet}
-      createTag={handleCreateTag}
+      handleCreateTweet={handleCreateTweet}
+      handleCreateTag={handleCreateTag}
     />
   )
 }

@@ -12,9 +12,7 @@ The motivation behind this project is to have a place to store tweets that I fin
 - [x] Filter tweets by tags
 - [x] Auth
 - [x] Add a tweet through the UI
+- [ ] Delete tags
+- [ ] Delete tweets
 - [ ] Sort tweets by date
 - [ ] Edit tweet entry
-
-## TODO
-
-- [ ] Use separate databases for prod and dev environments
