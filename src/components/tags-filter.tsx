@@ -33,17 +33,16 @@ function renderTag(tags: Array<Omit<Tag, 'userId'>>) {
 }
 
 export function TagsFilter({tags, createTag, deleteTag, ...props}: Props) {
-  const params = useSearchParams()
+  const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
-  console.log('tags: ', tags)
 
   const combobox = Ariakit.useComboboxStore({
     resetValueOnHide: true,
   })
   const select = Ariakit.useSelectStore({
     combobox,
-    defaultValue: params.get('tags')?.split(',') ?? [],
+    defaultValue: searchParams.get('tags')?.split(',') ?? [],
     setValue: value => handleFilter(value),
     animated: true,
   })
@@ -80,19 +79,21 @@ export function TagsFilter({tags, createTag, deleteTag, ...props}: Props) {
       return
     }
 
-    const params = new URLSearchParams(window.location.search)
+    const newSearchParams = new URLSearchParams(
+      Array.from(searchParams.entries()),
+    )
     const filteredTags = tags.filter(Boolean)
 
-    params.delete('tags')
+    newSearchParams.delete('tags')
 
     if (filteredTags.length) {
-      params.set('tags', filteredTags.join(','))
+      newSearchParams.set('tags', filteredTags.join(','))
     } else {
-      params.delete('tags')
+      newSearchParams.delete('tags')
     }
 
     startTransition(() => {
-      router.replace(`${pathname}?${searchParamsToString(params)}`)
+      router.replace(`${pathname}?${searchParamsToString(newSearchParams)}`)
     })
   }
 
@@ -120,9 +121,14 @@ export function TagsFilter({tags, createTag, deleteTag, ...props}: Props) {
   }
 
   async function handleOnDeleteTag(tagId: number) {
-    await deleteTag(tagId)
+    const tagName = tags.find(t => t.id === tagId)?.name
 
-    startTransition(() => {
+    startTransition(async () => {
+      await deleteTag(tagId)
+      // We are getting rid of the tag if it's selected
+      if (tagName && select.getState().value.includes(tagName)) {
+        select.setValue(prevTags => prevTags.filter(t => t !== tagName))
+      }
       router.refresh()
     })
   }
@@ -166,18 +172,18 @@ export function TagsFilter({tags, createTag, deleteTag, ...props}: Props) {
               <Ariakit.ComboboxItem
                 key={value.id}
                 focusOnHover
-                className="flex cursor-pointer items-center gap-2 p-2 relative"
+                className="flex cursor-pointer items-center gap-2 p-2 relative flex-1 mr-2"
                 render={p => (
-                  <div className="flex items-center justify-between pr-2">
+                  <div className="flex items-center justify-between pr-2 hover:bg-slate-100">
                     <Ariakit.SelectItem {...p} value={value.name}>
                       <Ariakit.SelectItemCheck />
                       <TagComponent tag={value} />
                     </Ariakit.SelectItem>
                     <button
-                      className="hover:bg-red-300 z-50"
+                      className="hover:bg-slate-200 px-3 py-1 rounded-md"
                       onClick={() => handleOnDeleteTag(value.id)}
                     >
-                      X
+                      Delete
                     </button>
                   </div>
                 )}

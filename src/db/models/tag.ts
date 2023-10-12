@@ -16,7 +16,7 @@ export async function getTags() {
   const tags = await db.query.tag.findMany({
     where: (tags, {eq}) => eq(tags.userId, userId),
   })
-  console.log('tags', tags)
+
   return tags
 }
 
