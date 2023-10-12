@@ -36,6 +36,7 @@ export function TagsFilter({tags, createTag, deleteTag, ...props}: Props) {
   const params = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
+  console.log('tags: ', tags)
 
   const combobox = Ariakit.useComboboxStore({
     resetValueOnHide: true,
@@ -50,7 +51,6 @@ export function TagsFilter({tags, createTag, deleteTag, ...props}: Props) {
   const selectValue = select.useState('value')
   const mounted = select.useState('mounted')
 
-  const [newTag, setNewTag] = React.useState<Tag>()
   const [isPending, startTransition] = React.useTransition()
   const deferredValue = React.useDeferredValue(comboboxValue)
 
@@ -59,23 +59,13 @@ export function TagsFilter({tags, createTag, deleteTag, ...props}: Props) {
   )
 
   const matches = React.useMemo(() => {
-    const tagsMap = new Map(tags.map(t => [t.id, t]))
-    if (newTag) {
-      tagsMap.set(newTag.id, newTag)
-    }
-    const tagsArray = Array.from(tagsMap.values())
-    return matchSorter(tagsArray, deferredValue, {keys: ['name']})
-  }, [deferredValue, newTag, tags])
+    return matchSorter(tags, deferredValue, {keys: ['name']})
+  }, [deferredValue, tags])
 
   const selectedTags = React.useMemo(() => {
-    const tagsMap = new Map(tags.map(t => [t.id, t]))
-    if (newTag) {
-      tagsMap.set(newTag.id, newTag)
-    }
-    const tagsArray = Array.from(tagsMap.values())
-    const filteredTags = tagsArray.filter(tag => selectValue.includes(tag.name))
+    const filteredTags = tags.filter(tag => selectValue.includes(tag.name))
     return filteredTags
-  }, [tags, newTag, selectValue])
+  }, [tags, selectValue])
 
   const showAddTagBtn =
     comboboxValue.length > 0 &&
@@ -107,25 +97,20 @@ export function TagsFilter({tags, createTag, deleteTag, ...props}: Props) {
   }
 
   async function handleOnCreateTag(tagName: string) {
-    combobox.hide()
-
     const newTagData = {
       name: tagName,
       color: tagColorRef.current,
     }
 
     select.setValue(prevTags => [...prevTags, tagName])
-    // TODO: Figure out how to avoid having the tag selected and the combobox closed when creating a tag
+
     try {
       startTransition(async () => {
-        const {newTag} = await createTag(newTagData)
-        if (newTag) {
-          setNewTag(newTag)
-        }
+        await createTag(newTagData)
+        router.refresh()
       })
       combobox.setValue('')
     } catch (error) {
-      combobox.show()
       select.setValue(prevTags => prevTags.filter(t => t !== tagName))
 
       if (error instanceof Error) {
