@@ -11,9 +11,8 @@ import {Tag as TagComponent} from './tag'
 
 type Props = {
   tags: Array<Tag>
-  createTag(
-    tag: Omit<Tag, 'userId' | 'id'>,
-  ): Promise<{success: boolean; newTag: Tag}>
+  deleteTag(tagId: number): Promise<void>
+  createTag(tag: Omit<Tag, 'userId' | 'id'>): Promise<void>
 } & (
   | {type: 'filter'}
   | {type: 'select'; onChange: (tags: Array<string>) => void}
@@ -33,8 +32,8 @@ function renderTag(tags: Array<Omit<Tag, 'userId'>>) {
   )
 }
 
-export function TagsFilter({tags, createTag, ...props}: Props) {
-  const params = useSearchParams()
+export function TagsFilter({tags, createTag, deleteTag, ...props}: Props) {
+  const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
 
@@ -43,7 +42,7 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
   })
   const select = Ariakit.useSelectStore({
     combobox,
-    defaultValue: params.get('tags')?.split(',') ?? [],
+    defaultValue: searchParams.get('tags')?.split(',') ?? [],
     setValue: value => handleFilter(value),
     animated: true,
   })
@@ -51,7 +50,6 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
   const selectValue = select.useState('value')
   const mounted = select.useState('mounted')
 
-  const [newTag, setNewTag] = React.useState<Tag>()
   const [isPending, startTransition] = React.useTransition()
   const deferredValue = React.useDeferredValue(comboboxValue)
 
@@ -60,23 +58,13 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
   )
 
   const matches = React.useMemo(() => {
-    const tagsMap = new Map(tags.map(t => [t.id, t]))
-    if (newTag) {
-      tagsMap.set(newTag.id, newTag)
-    }
-    const tagsArray = Array.from(tagsMap.values())
-    return matchSorter(tagsArray, deferredValue, {keys: ['name']})
-  }, [deferredValue, newTag, tags])
+    return matchSorter(tags, deferredValue, {keys: ['name']})
+  }, [deferredValue, tags])
 
   const selectedTags = React.useMemo(() => {
-    const tagsMap = new Map(tags.map(t => [t.id, t]))
-    if (newTag) {
-      tagsMap.set(newTag.id, newTag)
-    }
-    const tagsArray = Array.from(tagsMap.values())
-    const filteredTags = tagsArray.filter(tag => selectValue.includes(tag.name))
+    const filteredTags = tags.filter(tag => selectValue.includes(tag.name))
     return filteredTags
-  }, [tags, newTag, selectValue])
+  }, [tags, selectValue])
 
   const showAddTagBtn =
     comboboxValue.length > 0 &&
@@ -91,25 +79,25 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
       return
     }
 
-    const params = new URLSearchParams(window.location.search)
+    const newSearchParams = new URLSearchParams(
+      Array.from(searchParams.entries()),
+    )
     const filteredTags = tags.filter(Boolean)
 
-    params.delete('tags')
+    newSearchParams.delete('tags')
 
     if (filteredTags.length) {
-      params.set('tags', filteredTags.join(','))
+      newSearchParams.set('tags', filteredTags.join(','))
     } else {
-      params.delete('tags')
+      newSearchParams.delete('tags')
     }
 
     startTransition(() => {
-      router.replace(`${pathname}?${searchParamsToString(params)}`)
+      router.replace(`${pathname}?${searchParamsToString(newSearchParams)}`)
     })
   }
 
   async function handleOnCreateTag(tagName: string) {
-    combobox.hide()
-
     const newTagData = {
       name: tagName,
       color: tagColorRef.current,
@@ -119,20 +107,30 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
 
     try {
       startTransition(async () => {
-        const {newTag} = await createTag(newTagData)
-        if (newTag) {
-          setNewTag(newTag)
-        }
+        await createTag(newTagData)
+        router.refresh()
       })
       combobox.setValue('')
     } catch (error) {
-      combobox.show()
       select.setValue(prevTags => prevTags.filter(t => t !== tagName))
 
       if (error instanceof Error) {
         throw new Error(error.message)
       }
     }
+  }
+
+  async function handleOnDeleteTag(tagId: number) {
+    const tagName = tags.find(t => t.id === tagId)?.name
+
+    startTransition(async () => {
+      await deleteTag(tagId)
+      // We are getting rid of the tag if it's selected
+      if (tagName && select.getState().value.includes(tagName)) {
+        select.setValue(prevTags => prevTags.filter(t => t !== tagName))
+      }
+      router.refresh()
+    })
   }
 
   return (
@@ -174,12 +172,20 @@ export function TagsFilter({tags, createTag, ...props}: Props) {
               <Ariakit.ComboboxItem
                 key={value.id}
                 focusOnHover
-                className="flex cursor-pointer items-center gap-2 p-2"
+                className="flex cursor-pointer items-center gap-2 p-2 relative flex-1 mr-2"
                 render={p => (
-                  <Ariakit.SelectItem {...p} value={value.name}>
-                    <Ariakit.SelectItemCheck />
-                    <TagComponent tag={value} />
-                  </Ariakit.SelectItem>
+                  <div className="flex items-center justify-between pr-2 hover:bg-slate-100">
+                    <Ariakit.SelectItem {...p} value={value.name}>
+                      <Ariakit.SelectItemCheck />
+                      <TagComponent tag={value} />
+                    </Ariakit.SelectItem>
+                    <button
+                      className="hover:bg-slate-200 px-3 py-1 rounded-md"
+                      onClick={() => handleOnDeleteTag(value.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 )}
               />
             ))}

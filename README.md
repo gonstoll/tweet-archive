@@ -12,7 +12,8 @@ The motivation behind this project is to have a place to store tweets that I fin
 - [x] Filter tweets by tags
 - [x] Auth
 - [x] Add a tweet through the UI
-- [ ] Delete tags
+- [x] Delete tags
 - [ ] Delete tweets
+- [ ] Pagination
 - [ ] Sort tweets by date
 - [ ] Edit tweet entry
