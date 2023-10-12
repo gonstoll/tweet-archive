@@ -8,16 +8,14 @@ export default async function NewTweet() {
 
   async function handleCreateTag(tag: any) {
     'use server'
-    const newTag = await createTag(tag)
+    await createTag(tag)
     revalidatePath('/tweet/new')
-    return newTag
   }
 
   async function handleCreateTweet(tweet: any) {
     'use server'
-    const newTweet = await createTweet(tweet)
+    await createTweet(tweet)
     revalidatePath('/')
-    return newTweet
   }
 
   async function handleDeleteTag(tagId: number) {

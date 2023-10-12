@@ -33,17 +33,7 @@ export async function createTag(tag: Omit<Tag, 'userId' | 'id'>) {
     throw new Error('Rate limit exceeded')
   }
 
-  const newTag = await db
-    .insert(schema.tag)
-    .values({...tag, userId: user.userId})
-
-  return {
-    newTag: {
-      ...tag,
-      id: Number(newTag.insertId),
-      userId: user.userId,
-    },
-  }
+  await db.insert(schema.tag).values({...tag, userId: user.userId})
 }
 
 export async function deleteTag(tagId: number) {

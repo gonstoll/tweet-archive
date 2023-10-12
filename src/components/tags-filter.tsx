@@ -12,7 +12,7 @@ import {Tag as TagComponent} from './tag'
 type Props = {
   tags: Array<Tag>
   deleteTag(tagId: number): Promise<void>
-  createTag(tag: Omit<Tag, 'userId' | 'id'>): Promise<{newTag: Tag}>
+  createTag(tag: Omit<Tag, 'userId' | 'id'>): Promise<void>
 } & (
   | {type: 'filter'}
   | {type: 'select'; onChange: (tags: Array<string>) => void}
