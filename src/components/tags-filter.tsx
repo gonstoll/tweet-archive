@@ -1,10 +1,9 @@
 'use client'
-
 import * as Ariakit from '@ariakit/react'
 import {matchSorter} from 'match-sorter'
 import {usePathname, useRouter, useSearchParams} from 'next/navigation'
 import * as React from 'react'
-import {type Tag} from '~/db/models/tag'
+import type {Tag} from '~/db/models/tag'
 import {tagColors} from '~/db/schema'
 import {searchParamsToString} from '~/utils/search-params-to-string'
 import {Tag as TagComponent} from './tag'
@@ -172,15 +171,15 @@ export function TagsFilter({tags, createTag, deleteTag, ...props}: Props) {
               <Ariakit.ComboboxItem
                 key={value.id}
                 focusOnHover
-                className="flex cursor-pointer items-center gap-2 p-2 relative flex-1 mr-2"
+                className="relative mr-2 flex flex-1 cursor-pointer items-center gap-2 p-2"
                 render={p => (
-                  <div className="flex items-center justify-between pr-2 hover:bg-slate-100">
+                  <div className="group flex items-center justify-between pr-2 hover:bg-slate-100">
                     <Ariakit.SelectItem {...p} value={value.name}>
                       <Ariakit.SelectItemCheck />
                       <TagComponent tag={value} />
                     </Ariakit.SelectItem>
                     <button
-                      className="hover:bg-slate-200 px-3 py-1 rounded-md"
+                      className="rounded-md bg-slate-100 px-3 py-1 text-sm group-hover:bg-slate-200 hover:group-hover:bg-slate-300"
                       onClick={() => handleOnDeleteTag(value.id)}
                     >
                       Delete

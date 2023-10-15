@@ -48,8 +48,8 @@ export default async function Home({searchParams}: Props) {
         </div>
       </div>
       <div className="gap-4 md:columns-2 xl:columns-3">
-        {tweets.map(t => (
-          <Tweet key={t.id} tweet={t} />
+        {tweets.map(tweet => (
+          <Tweet key={tweet.id} tweet={tweet} />
         ))}
       </div>
     </>

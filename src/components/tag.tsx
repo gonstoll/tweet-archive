@@ -1,5 +1,5 @@
-import {type Tag} from '~/db/models/tag'
-import {tagColors} from '~/db/schema'
+import type {Tag} from '~/db/models/tag'
+import type {tagColors} from '~/db/schema'
 import {classNames} from '~/utils/classnames'
 
 const colors = {
@@ -18,7 +18,7 @@ export function Tag({tag}: {tag: Omit<Tag, 'id' | 'userId'>}) {
     <span
       className={classNames(
         colors[tag.color],
-        'rounded-md px-2 py-1 text-sm text-black'
+        'rounded-md px-2 py-1 text-sm text-black',
       )}
     >
       #{tag.name}
