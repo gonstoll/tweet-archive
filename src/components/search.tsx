@@ -1,5 +1,4 @@
 'use client'
-
 import {usePathname, useRouter, useSearchParams} from 'next/navigation'
 import * as React from 'react'
 import {searchParamsToString} from '~/utils/search-params-to-string'
