@@ -1,9 +1,9 @@
 import {auth} from '@clerk/nextjs'
-import {InferModel, and, exists, inArray, like} from 'drizzle-orm'
+import {and, eq, exists, inArray, like, type InferModel} from 'drizzle-orm'
 import {revalidatePath} from 'next/cache'
 import {db, ratelimit} from '../db'
 import * as schema from '../schema'
-import {Tag} from './tag'
+import type {Tag} from './tag'
 
 export type Tweet = InferModel<typeof schema.tweet>
 export type UserTweet = Tweet & {tags?: Array<Tag>; tweetId: string}
@@ -135,8 +135,6 @@ export async function createTweet({
   tagIds,
   ...tweet
 }: Omit<Tweet, 'id' | 'userId'> & {tagIds?: Array<number>}) {
-  'use server'
-
   const user = auth()
 
   if (!user.userId) {
@@ -162,4 +160,23 @@ export async function createTweet({
   }
 
   revalidatePath('/')
+}
+
+export async function deleteTweet(tweetId: number) {
+  const user = auth()
+
+  if (!user.userId) {
+    throw new Error('User not logged in')
+  }
+
+  const {success} = await ratelimit.limit(user.userId)
+
+  if (!success) {
+    throw new Error('Rate limit exceeded')
+  }
+
+  await db.delete(schema.tweet).where(eq(schema.tweet.id, tweetId))
+  await db
+    .delete(schema.tweetsToTags)
+    .where(eq(schema.tweetsToTags.tweetId, tweetId))
 }

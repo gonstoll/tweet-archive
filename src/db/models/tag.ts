@@ -1,6 +1,6 @@
 'use server'
 import {auth} from '@clerk/nextjs'
-import {InferModel, eq} from 'drizzle-orm'
+import {eq, type InferModel} from 'drizzle-orm'
 import {db, ratelimit} from '../db'
 import * as schema from '../schema'
 
