@@ -1,7 +1,7 @@
+import {revalidatePath} from 'next/cache'
 import type {Tweet} from 'react-tweet/api'
 import {deleteTweet, type UserTweet} from '~/db/models/tweet'
 import {TweetContent} from './tweet-content'
-import {revalidatePath} from 'next/cache'
 
 async function getTweetData(tweetId: string) {
   const res = await fetch(`https://react-tweet.vercel.app/api/tweet/${tweetId}`)
@@ -26,7 +26,7 @@ export async function Tweet({tweet}: {tweet?: UserTweet}) {
     <TweetContent
       tweet={tweet}
       tweetData={tweetData.data}
-      handleDeleteTweet={handleDeleteTweet}
+      deleteTweet={handleDeleteTweet}
     />
   ) : (
     <h1>New tweet!</h1>

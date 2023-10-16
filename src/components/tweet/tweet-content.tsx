@@ -1,24 +1,36 @@
 'use client'
+import {useRouter} from 'next/navigation'
+import {useTransition} from 'react'
 import {EmbeddedTweet} from 'react-tweet'
 import type {Tweet} from 'react-tweet/api'
 import type {UserTweet} from '~/db/models/tweet'
+import {classNames} from '~/utils/classnames'
 import {Tag} from '../tag'
 
 type TweetContent = {
   tweet: UserTweet
   tweetData: Tweet
-  handleDeleteTweet(tweetId: number): Promise<void>
+  deleteTweet(tweetId: number): Promise<void>
 }
 
-export async function TweetContent({
-  tweet,
-  tweetData,
-  handleDeleteTweet,
-}: TweetContent) {
+export function TweetContent({tweet, tweetData, deleteTweet}: TweetContent) {
+  const [isPending, startTransition] = useTransition()
+  const router = useRouter()
+
+  async function handleDeleteTweet(tweetId: number) {
+    startTransition(async () => {
+      await deleteTweet(tweetId)
+      router.refresh()
+    })
+  }
+
   return (
     <div
       key={tweet.id}
-      className="mb-4 break-inside-avoid rounded-md border-1 border-slate-200 p-4"
+      className={classNames(
+        'mb-4 break-inside-avoid rounded-md border-1 border-slate-200 p-4',
+        {'opacity-50': isPending},
+      )}
     >
       <div className="mb-4">
         <EmbeddedTweet tweet={tweetData} />
