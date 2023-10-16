@@ -27,8 +27,8 @@ export async function TweetContent({
         {tweet.tags?.map(tag => <Tag key={tag.id} tag={tag} />)}
       </div>
       {tweet.description ? <p className="mt-4">{tweet.description}</p> : null}
-      <div className="flex items-center justify-between">
-        <p className="mt-4 text-xs text-slate-400">
+      <div className="mt-4 flex items-center justify-between">
+        <p className="text-xs text-slate-400">
           {new Date(tweet.createdAt).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
