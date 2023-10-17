@@ -17,3 +17,4 @@ The motivation behind this project is to have a place to store tweets that I fin
 - [ ] Pagination
 - [ ] Sort tweets by date
 - [ ] Edit tweet entry
+- [ ] Disallow duplicated tweets

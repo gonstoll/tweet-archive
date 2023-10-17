@@ -4,20 +4,48 @@ import {Search} from '~/components/search'
 import {TagsFilter} from '~/components/tags-filter'
 import {Tweet} from '~/components/tweet'
 import {createTag, deleteTag, getTags} from '~/db/models/tag'
-import {getTweets} from '~/db/models/tweet'
+import {getTweets, getTweetsCount} from '~/db/models/tweet'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 type Props = {
-  searchParams: {
-    search: string
-    tags: string
-  }
+  searchParams: Record<string, string | string[] | undefined>
 }
 
 export default async function Home({searchParams}: Props) {
-  const tweets = await getTweets(searchParams)
+  const totalTweets = await getTweetsCount()
+  const tweetsPerPage = 3
+  const totalPages = Math.ceil(totalTweets / tweetsPerPage)
+
+  const transformedSearchParams = {
+    search: typeof searchParams.search === 'string' ? searchParams.search : '',
+    tags: typeof searchParams.tags === 'string' ? searchParams.tags : '',
+    page:
+      typeof searchParams.page === 'string' &&
+      Number(searchParams.page) > 1 &&
+      Number(searchParams.page) <= totalPages
+        ? Number(searchParams.page)
+        : 1,
+  }
+
+  const currentSearchParams = new URLSearchParams()
+
+  if (transformedSearchParams.search) {
+    currentSearchParams.set('search', transformedSearchParams.search)
+  }
+
+  if (transformedSearchParams.tags) {
+    currentSearchParams.set('tags', transformedSearchParams.tags)
+  }
+
+  if (transformedSearchParams.page > 1) {
+    currentSearchParams.set('page', String(transformedSearchParams.page))
+  } else {
+    currentSearchParams.delete('page')
+  }
+
+  const tweets = await getTweets({...transformedSearchParams, tweetsPerPage})
   const tags = await getTags()
 
   async function handleDeleteTag(tagId: number) {
@@ -52,6 +80,38 @@ export default async function Home({searchParams}: Props) {
           <Tweet key={tweet.id} tweet={tweet} />
         ))}
       </div>
+      <div>
+        <NextPage
+          page={transformedSearchParams.page}
+          totalPages={totalPages}
+          currentSearchParams={currentSearchParams}
+        />
+      </div>
     </>
+  )
+}
+
+function NextPage({
+  page,
+  totalPages,
+  currentSearchParams,
+}: {
+  page: number
+  totalPages: number
+  currentSearchParams: URLSearchParams
+}) {
+  const notInLastPage = page < totalPages
+  const nextPageSearchParams = new URLSearchParams(currentSearchParams)
+
+  if (page <= totalPages) {
+    nextPageSearchParams.set('page', String(page + 1))
+  } else {
+    nextPageSearchParams.delete('page')
+  }
+
+  return notInLastPage ? (
+    <Link href={`/?${nextPageSearchParams}`}>Next page</Link>
+  ) : (
+    <button disabled>Next page</button>
   )
 }

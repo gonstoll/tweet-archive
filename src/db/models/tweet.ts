@@ -1,5 +1,5 @@
 import {auth} from '@clerk/nextjs'
-import {and, eq, exists, inArray, like, type InferModel} from 'drizzle-orm'
+import {and, eq, exists, inArray, like, type InferModel, sql} from 'drizzle-orm'
 import {revalidatePath} from 'next/cache'
 import {db, ratelimit} from '../db'
 import * as schema from '../schema'
@@ -10,9 +10,23 @@ export type UserTweet = Tweet & {tags?: Array<Tag>; tweetId: string}
 type GetTweetsOpts = {
   search: string
   tags: string
+  page: number
+  tweetsPerPage: number
 }
 
-export async function getTweets({search = '', tags = ''}: GetTweetsOpts) {
+export async function getTweetsCount() {
+  const tweetsCount = await db
+    .select({count: sql<number>`count(*)`})
+    .from(schema.tweet)
+  return tweetsCount[0].count
+}
+
+export async function getTweets({
+  search,
+  tags,
+  page,
+  tweetsPerPage,
+}: GetTweetsOpts) {
   const {userId} = auth()
 
   if (!userId) {
@@ -25,6 +39,8 @@ export async function getTweets({search = '', tags = ''}: GetTweetsOpts) {
     .filter(Boolean)
 
   const filteredTweetsQuery = await db.query.tweet.findMany({
+    limit: tweetsPerPage,
+    offset: (Number(page) - 1) * tweetsPerPage,
     columns: {
       id: true,
     },
@@ -99,9 +115,7 @@ export async function getTweetById(id: string) {
     where: (tweets, {eq}) => eq(tweets.id, Number(id)),
     with: {
       tweetsToTags: {
-        with: {
-          tag: true,
-        },
+        with: {tag: true},
       },
     },
   })
