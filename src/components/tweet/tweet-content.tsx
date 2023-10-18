@@ -48,7 +48,7 @@ export function TweetContent({tweet, tweetData, deleteTweet}: TweetContent) {
           })}
         </p>
         <button
-          className="rounded-md bg-slate-100 px-3 py-1 text-sm hover:bg-slate-300"
+          className="rounded-md border border-red-500 bg-white px-3 py-1 text-sm font-semibold text-red-700 hover:bg-red-50"
           onClick={() => handleDeleteTweet(tweet.id)}
         >
           Delete
