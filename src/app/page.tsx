@@ -65,13 +65,13 @@ export default async function Home({searchParams}: Props) {
             deleteTag={handleDeleteTag}
           />
         </div>
-        <div className="flex flex-1 items-end gap-4">
+        <div className="flex flex-1 flex-col gap-8 lg:flex-row lg:items-end lg:gap-24">
           <Search />
           <Link
             href="tweet/new"
-            className="flex h-11 items-center justify-center gap-1 whitespace-nowrap rounded-md bg-slate-300 px-8"
+            className="flex items-center whitespace-nowrap rounded-md border border-sky-800 bg-sky-500 px-3 py-2 text-sm font-semibold text-white hover:bg-sky-800"
           >
-            Add<span className="hidden lg:block">tweet</span>
+            Add tweet
           </Link>
         </div>
       </div>
@@ -80,7 +80,10 @@ export default async function Home({searchParams}: Props) {
           <Tweet key={tweet.id} tweet={tweet} />
         ))}
       </div>
-      <div>
+      <div className="mt-8 flex items-center justify-between">
+        <p>
+          Showing <span>1</span> to <span>3</span> of <span>12</span> tweets
+        </p>
         <NextPage
           page={transformedSearchParams.page}
           totalPages={totalPages}
@@ -110,7 +113,12 @@ function NextPage({
   }
 
   return notInLastPage ? (
-    <Link href={`/?${nextPageSearchParams}`}>Next page</Link>
+    <Link
+      href={`/?${nextPageSearchParams}`}
+      className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+    >
+      Next page
+    </Link>
   ) : (
     <button disabled>Next page</button>
   )
