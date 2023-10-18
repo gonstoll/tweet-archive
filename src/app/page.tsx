@@ -75,7 +75,7 @@ export default async function Home({searchParams}: Props) {
           <Search />
           <Link
             href="tweet/new"
-            className="flex items-center whitespace-nowrap rounded-md border border-sky-800 bg-sky-500 px-3 py-2 text-sm font-semibold text-white hover:bg-sky-800"
+            className="flex items-center justify-center whitespace-nowrap rounded-md border border-sky-800 bg-sky-500 px-3 py-2 text-sm font-semibold text-white hover:bg-sky-800"
           >
             Add tweet
           </Link>
@@ -86,7 +86,7 @@ export default async function Home({searchParams}: Props) {
           <Tweet key={tweet.id} tweet={tweet} />
         ))}
       </div>
-      <div className="mt-8 flex flex-col items-center justify-between gap-4 md:flex-row">
+      <div className="mt-8 flex flex-col items-center justify-end gap-4 md:flex-row">
         <p>
           Showing{' '}
           <span className="font-semibold">
