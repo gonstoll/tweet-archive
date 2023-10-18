@@ -15,6 +15,6 @@ The motivation behind this project is to have a place to store tweets that I fin
 - [x] Delete tags
 - [x] Delete tweets
 - [x] Pagination
-- [ ] Disallow duplicated tweets
+- [x] Disallow duplicated tweets
 - [ ] Edit tweet entry
 - [ ] Sort tweets by date

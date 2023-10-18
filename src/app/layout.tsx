@@ -47,12 +47,14 @@ export default function RootLayout({
             </div>
           </header>
           <main
-            className={classNames('p-6 lg:p-10', {
-              'flex flex-1 items-center justify-center': !isSignedIn,
+            className={classNames('flex-1 p-6 lg:p-10', {
+              'flex items-center justify-center': !isSignedIn,
             })}
           >
             {modal}
-            <div className="mx-auto max-w-xl md:max-w-8xl">{children}</div>
+            <div className="mx-auto flex h-full max-w-xl flex-col md:max-w-8xl">
+              {children}
+            </div>
           </main>
         </body>
       </html>
