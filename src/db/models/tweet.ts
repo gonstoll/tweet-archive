@@ -206,6 +206,18 @@ export async function createTweet({
     throw new Error('Rate limit exceeded')
   }
 
+  const tweetId = getTweetId(tweet.url)
+
+  const existingTweet = await db.query.tweet.findFirst({
+    where: tweets => {
+      return and(like(tweets.url, `%${tweetId}%`))
+    },
+  })
+
+  if (existingTweet) {
+    throw new Error('That tweet already exists')
+  }
+
   const newTweet = await db
     .insert(schema.tweet)
     .values({...tweet, userId: user.userId})

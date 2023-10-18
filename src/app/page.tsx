@@ -3,7 +3,6 @@ import Link from 'next/link'
 import {Search} from '~/components/search'
 import {TagsFilter} from '~/components/tags-filter'
 import {Tweet} from '~/components/tweet'
-import {db} from '~/db/db'
 import {createTag, deleteTag, getTags} from '~/db/models/tag'
 import {getTweets, getTweetsCount} from '~/db/models/tweet'
 
@@ -21,7 +20,7 @@ export default async function Home({searchParams}: Props) {
     typeof searchParams.tags === 'string' ? searchParams.tags : ''
 
   const totalTweets = await getTweetsCount({search, tags: tagsParam})
-  const tweetsPerPage = 3
+  const tweetsPerPage = 20
   const totalPages = Math.ceil(totalTweets / tweetsPerPage)
 
   const sanitizedSearchParams = {
@@ -81,7 +80,7 @@ export default async function Home({searchParams}: Props) {
           </Link>
         </div>
       </div>
-      <div className="gap-4 md:columns-2 xl:columns-3">
+      <div className="mb-auto gap-4 md:columns-2 xl:columns-3">
         {tweets.map(tweet => (
           <Tweet key={tweet.id} tweet={tweet} />
         ))}
