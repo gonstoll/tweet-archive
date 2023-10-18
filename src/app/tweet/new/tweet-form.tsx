@@ -88,13 +88,13 @@ export function TweetForm({
       <div className="mt-6 flex items-center justify-end gap-4">
         <Link
           href="/"
-          className="flex h-11 items-center justify-center rounded-md bg-red-500 px-8"
+          className="rounded-md border border-red-500 bg-white px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
         >
           Cancel
         </Link>
         <button
           type="submit"
-          className="flex h-11 items-center justify-center rounded-md bg-slate-300 px-8"
+          className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
         >
           Add tweet
         </button>
