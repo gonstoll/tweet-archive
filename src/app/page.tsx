@@ -130,6 +130,11 @@ function NextPage({
       Next page
     </Link>
   ) : (
-    <button disabled>Next page</button>
+    <button
+      disabled
+      className="cursor-not-allowed rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 opacity-50"
+    >
+      Next page
+    </button>
   )
 }
