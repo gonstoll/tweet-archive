@@ -31,6 +31,10 @@ function renderTag(tags: Array<Omit<Tag, 'userId'>>) {
   )
 }
 
+function randomizeTagColor() {
+  return tagColors[Math.floor(Math.random() * tagColors.length)]
+}
+
 export function TagsFilter({tags, createTag, deleteTag, ...props}: Props) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -52,9 +56,7 @@ export function TagsFilter({tags, createTag, deleteTag, ...props}: Props) {
   const [isPending, startTransition] = React.useTransition()
   const deferredValue = React.useDeferredValue(comboboxValue)
 
-  const tagColorRef = React.useRef(
-    tagColors[Math.floor(Math.random() * tagColors.length)],
-  )
+  const tagColorRef = React.useRef(randomizeTagColor())
 
   const matches = React.useMemo(() => {
     return matchSorter(tags, deferredValue, {keys: ['name']})
@@ -110,6 +112,7 @@ export function TagsFilter({tags, createTag, deleteTag, ...props}: Props) {
         router.refresh()
       })
       combobox.setValue('')
+      tagColorRef.current = randomizeTagColor()
     } catch (error) {
       select.setValue(prevTags => prevTags.filter(t => t !== tagName))
 
@@ -158,7 +161,7 @@ export function TagsFilter({tags, createTag, deleteTag, ...props}: Props) {
           gutter={4}
           className="relative z-50 flex max-h-72 -translate-y-6 flex-col overflow-auto overscroll-contain rounded-md border-1 border-slate-300 bg-white opacity-0 duration-200 data-[enter]:translate-y-0 data-[enter]:opacity-100"
         >
-          <div className="sticky top-0 mb-2 w-full bg-white p-2">
+          <div className="sticky top-0 z-40 mb-2 w-full bg-white p-2">
             <Ariakit.Combobox
               store={combobox}
               autoSelect

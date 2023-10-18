@@ -1,5 +1,5 @@
 import {auth} from '@clerk/nextjs'
-import {and, eq, exists, inArray, like, type InferModel} from 'drizzle-orm'
+import {and, eq, exists, inArray, like, type InferModel, sql} from 'drizzle-orm'
 import {revalidatePath} from 'next/cache'
 import {db, ratelimit} from '../db'
 import * as schema from '../schema'
@@ -10,9 +10,68 @@ export type UserTweet = Tweet & {tags?: Array<Tag>; tweetId: string}
 type GetTweetsOpts = {
   search: string
   tags: string
+  page: number
+  tweetsPerPage: number
 }
 
-export async function getTweets({search = '', tags = ''}: GetTweetsOpts) {
+export async function getTweetsCount({
+  tags,
+  search,
+}: Omit<GetTweetsOpts, 'page' | 'tweetsPerPage'>) {
+  const {userId} = auth()
+
+  if (!userId) {
+    return 0
+  }
+
+  const transformedTags = tags
+    .split(',')
+    .map(tag => tag.trim())
+    .filter(Boolean)
+
+  const filteredTweetsQuery = await db.query.tweet.findMany({
+    columns: {
+      id: true,
+    },
+    where: (tweets, {and, sql, eq}) => {
+      return and(
+        transformedTags.length
+          ? sql`json_length(${tweets.tweetsToTags}) > 0`
+          : undefined,
+        like(tweets.description, `%${search}%`),
+        eq(tweets.userId, userId),
+      )
+    },
+    with: {
+      tweetsToTags: {
+        where: (tweetsToTags, {eq}) => {
+          return exists(
+            db
+              .select()
+              .from(schema.tag)
+              .where(() => {
+                if (transformedTags.length) {
+                  return and(
+                    inArray(schema.tag.name, transformedTags),
+                    eq(tweetsToTags.tagId, schema.tag.id),
+                  )
+                }
+              }),
+          )
+        },
+      },
+    },
+  })
+
+  return filteredTweetsQuery.length
+}
+
+export async function getTweets({
+  search,
+  tags,
+  page,
+  tweetsPerPage,
+}: GetTweetsOpts) {
   const {userId} = auth()
 
   if (!userId) {
@@ -25,6 +84,8 @@ export async function getTweets({search = '', tags = ''}: GetTweetsOpts) {
     .filter(Boolean)
 
   const filteredTweetsQuery = await db.query.tweet.findMany({
+    limit: tweetsPerPage,
+    offset: (Number(page) - 1) * tweetsPerPage,
     columns: {
       id: true,
     },
@@ -99,9 +160,7 @@ export async function getTweetById(id: string) {
     where: (tweets, {eq}) => eq(tweets.id, Number(id)),
     with: {
       tweetsToTags: {
-        with: {
-          tag: true,
-        },
+        with: {tag: true},
       },
     },
   })
