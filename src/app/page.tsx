@@ -80,15 +80,25 @@ export default async function Home({searchParams}: Props) {
           <Tweet key={tweet.id} tweet={tweet} />
         ))}
       </div>
-      <div className="mt-8 flex items-center justify-between">
+      <div className="mt-8 flex flex-col items-center justify-between gap-4 md:flex-row">
         <p>
-          Showing <span>1</span> to <span>3</span> of <span>12</span> tweets
+          Showing{' '}
+          <span className="font-semibold">
+            {(transformedSearchParams.page - 1) * tweetsPerPage + 1}
+          </span>{' '}
+          to{' '}
+          <span className="font-semibold">
+            {transformedSearchParams.page * tweetsPerPage}
+          </span>{' '}
+          of <span className="font-semibold">{totalTweets}</span> tweets
         </p>
-        <NextPage
-          page={transformedSearchParams.page}
-          totalPages={totalPages}
-          currentSearchParams={currentSearchParams}
-        />
+        <div className="flex items-center gap-2">
+          <NextPage
+            page={transformedSearchParams.page}
+            totalPages={totalPages}
+            currentSearchParams={currentSearchParams}
+          />
+        </div>
       </div>
     </>
   )
