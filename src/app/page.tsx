@@ -3,6 +3,7 @@ import Link from 'next/link'
 import {Search} from '~/components/search'
 import {TagsFilter} from '~/components/tags-filter'
 import {Tweet} from '~/components/tweet'
+import {db} from '~/db/db'
 import {createTag, deleteTag, getTags} from '~/db/models/tag'
 import {getTweets, getTweetsCount} from '~/db/models/tweet'
 
@@ -14,13 +15,18 @@ type Props = {
 }
 
 export default async function Home({searchParams}: Props) {
-  const totalTweets = await getTweetsCount()
+  const search =
+    typeof searchParams.search === 'string' ? searchParams.search : ''
+  const tagsParam =
+    typeof searchParams.tags === 'string' ? searchParams.tags : ''
+
+  const totalTweets = await getTweetsCount({search, tags: tagsParam})
   const tweetsPerPage = 3
   const totalPages = Math.ceil(totalTweets / tweetsPerPage)
 
-  const transformedSearchParams = {
-    search: typeof searchParams.search === 'string' ? searchParams.search : '',
-    tags: typeof searchParams.tags === 'string' ? searchParams.tags : '',
+  const sanitizedSearchParams = {
+    search,
+    tags: tagsParam,
     page:
       typeof searchParams.page === 'string' &&
       Number(searchParams.page) > 1 &&
@@ -31,21 +37,21 @@ export default async function Home({searchParams}: Props) {
 
   const currentSearchParams = new URLSearchParams()
 
-  if (transformedSearchParams.search) {
-    currentSearchParams.set('search', transformedSearchParams.search)
+  if (sanitizedSearchParams.search) {
+    currentSearchParams.set('search', sanitizedSearchParams.search)
   }
 
-  if (transformedSearchParams.tags) {
-    currentSearchParams.set('tags', transformedSearchParams.tags)
+  if (sanitizedSearchParams.tags) {
+    currentSearchParams.set('tags', sanitizedSearchParams.tags)
   }
 
-  if (transformedSearchParams.page > 1) {
-    currentSearchParams.set('page', String(transformedSearchParams.page))
+  if (sanitizedSearchParams.page > 1) {
+    currentSearchParams.set('page', String(sanitizedSearchParams.page))
   } else {
     currentSearchParams.delete('page')
   }
 
-  const tweets = await getTweets({...transformedSearchParams, tweetsPerPage})
+  const tweets = await getTweets({...sanitizedSearchParams, tweetsPerPage})
   const tags = await getTags()
 
   async function handleDeleteTag(tagId: number) {
@@ -84,23 +90,60 @@ export default async function Home({searchParams}: Props) {
         <p>
           Showing{' '}
           <span className="font-semibold">
-            {(transformedSearchParams.page - 1) * tweetsPerPage + 1}
+            {(sanitizedSearchParams.page - 1) * tweetsPerPage + 1}
           </span>{' '}
           to{' '}
           <span className="font-semibold">
-            {transformedSearchParams.page * tweetsPerPage}
+            {Math.min(sanitizedSearchParams.page * tweetsPerPage, totalTweets)}
           </span>{' '}
           of <span className="font-semibold">{totalTweets}</span> tweets
         </p>
         <div className="flex items-center gap-2">
+          <PreviousPage
+            page={sanitizedSearchParams.page}
+            currentSearchParams={currentSearchParams}
+          />
           <NextPage
-            page={transformedSearchParams.page}
+            page={sanitizedSearchParams.page}
             totalPages={totalPages}
             currentSearchParams={currentSearchParams}
           />
         </div>
       </div>
     </>
+  )
+}
+
+function PreviousPage({
+  page,
+  currentSearchParams,
+}: {
+  page: number
+  currentSearchParams: URLSearchParams
+}) {
+  const notInFirstPage = page > 1
+  const nextPageSearchParams = new URLSearchParams(currentSearchParams)
+
+  if (page > 2) {
+    nextPageSearchParams.set('page', String(page - 1))
+  } else {
+    nextPageSearchParams.delete('page')
+  }
+
+  return notInFirstPage ? (
+    <Link
+      href={`/?${nextPageSearchParams}`}
+      className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+    >
+      Previous page
+    </Link>
+  ) : (
+    <button
+      disabled
+      className="cursor-not-allowed rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 opacity-50"
+    >
+      Previous page
+    </button>
   )
 }
 

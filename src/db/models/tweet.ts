@@ -14,11 +14,56 @@ type GetTweetsOpts = {
   tweetsPerPage: number
 }
 
-export async function getTweetsCount() {
-  const tweetsCount = await db
-    .select({count: sql<number>`count(*)`})
-    .from(schema.tweet)
-  return tweetsCount[0].count
+export async function getTweetsCount({
+  tags,
+  search,
+}: Omit<GetTweetsOpts, 'page' | 'tweetsPerPage'>) {
+  const {userId} = auth()
+
+  if (!userId) {
+    return 0
+  }
+
+  const transformedTags = tags
+    .split(',')
+    .map(tag => tag.trim())
+    .filter(Boolean)
+
+  const filteredTweetsQuery = await db.query.tweet.findMany({
+    columns: {
+      id: true,
+    },
+    where: (tweets, {and, sql, eq}) => {
+      return and(
+        transformedTags.length
+          ? sql`json_length(${tweets.tweetsToTags}) > 0`
+          : undefined,
+        like(tweets.description, `%${search}%`),
+        eq(tweets.userId, userId),
+      )
+    },
+    with: {
+      tweetsToTags: {
+        where: (tweetsToTags, {eq}) => {
+          return exists(
+            db
+              .select()
+              .from(schema.tag)
+              .where(() => {
+                if (transformedTags.length) {
+                  return and(
+                    inArray(schema.tag.name, transformedTags),
+                    eq(tweetsToTags.tagId, schema.tag.id),
+                  )
+                }
+              }),
+          )
+        },
+      },
+    },
+  })
+
+  return filteredTweetsQuery.length
 }
 
 export async function getTweets({
