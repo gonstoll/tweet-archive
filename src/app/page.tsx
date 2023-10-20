@@ -6,9 +6,6 @@ import {Tweet} from '~/components/tweet'
 import {createTag, deleteTag, getTags} from '~/db/models/tag'
 import {getTweets, getTweetsCount} from '~/db/models/tweet'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
 type Props = {
   searchParams: Record<string, string | string[] | undefined>
 }

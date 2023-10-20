@@ -2,7 +2,7 @@
 import Image from 'next/image'
 import {useRouter} from 'next/navigation'
 import {useTransition} from 'react'
-import type {Tweet} from 'react-tweet/api'
+import type {MediaDetails, Tweet} from 'react-tweet/api'
 import type {UserTweet} from '~/db/models/tweet'
 import {classNames} from '~/utils/classnames'
 import {Tag} from '../tag'
@@ -15,6 +15,65 @@ type TweetContent = {
 
 function getTweetUrl(handle: string, tweetId: string) {
   return `https://x.com/${handle}/status/${tweetId}`
+}
+
+function TweetMedia({mediaDetails}: {mediaDetails: Array<MediaDetails>}) {
+  return (
+    <div
+      className={classNames('relative grid overflow-hidden rounded-md', {
+        'grid-cols-2': mediaDetails.length === 2,
+        'grid-cols-3': mediaDetails.length === 3,
+        'grid-cols-4': mediaDetails.length > 3,
+      })}
+    >
+      {mediaDetails.map(m => {
+        switch (m.type) {
+          case 'photo': {
+            return (
+              <a
+                href={m.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+                key={m.media_url_https}
+              >
+                <Image
+                  key={m.url}
+                  src={m.media_url_https}
+                  alt={m.ext_alt_text || 'Image'}
+                  width={m.sizes.small.w}
+                  height={m.sizes.small.h}
+                />
+              </a>
+            )
+          }
+
+          case 'video': {
+            return (
+              <a
+                href={m.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+                key={m.url}
+              >
+                <Image
+                  key={m.url}
+                  src={m.media_url_https}
+                  alt="Video"
+                  width={m.sizes.small.w}
+                  height={m.sizes.small.h}
+                />
+              </a>
+            )
+          }
+          default: {
+            return null
+          }
+        }
+      })}
+    </div>
+  )
 }
 
 function QuotedTweet({text, user}: Pick<Tweet, 'user' | 'text'>) {
@@ -77,6 +136,12 @@ function TweetContent({tweetData}: {tweetData: Tweet}) {
       </a>
 
       <p className="mt-4 text-gray-600">{tweetData.text}</p>
+
+      {tweetData.mediaDetails ? (
+        <div className="mt-2">
+          <TweetMedia mediaDetails={tweetData.mediaDetails} />
+        </div>
+      ) : null}
 
       {tweetData.quoted_tweet ? (
         <a
@@ -158,6 +223,7 @@ function TweetContent({tweetData}: {tweetData: Tweet}) {
 }
 
 export function TweetContainer({tweet, tweetData, deleteTweet}: TweetContent) {
+  console.log('logging tweetData', tweetData)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
 
