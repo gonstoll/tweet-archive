@@ -149,7 +149,7 @@ function TweetContent({tweet}: {tweet: EnrichedTweet}) {
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sky-300"
+                className="text-sky-500"
               >
                 {item.text}
               </a>
