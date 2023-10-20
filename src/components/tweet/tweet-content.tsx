@@ -2,11 +2,11 @@
 import Image from 'next/image'
 import {useRouter} from 'next/navigation'
 import {useTransition} from 'react'
+import {enrichTweet, type EnrichedTweet} from 'react-tweet'
 import type {MediaDetails, Tweet} from 'react-tweet/api'
 import type {UserTweet} from '~/db/models/tweet'
 import {classNames} from '~/utils/classnames'
 import {Tag} from '../tag'
-import {enrichTweet} from 'react-tweet'
 
 type TweetContent = {
   tweet: UserTweet
@@ -32,11 +32,11 @@ function TweetMedia({mediaDetails}: {mediaDetails: Array<MediaDetails>}) {
           case 'photo': {
             return (
               <a
+                key={m.media_url_https}
                 href={m.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block"
-                key={m.media_url_https}
               >
                 <Image
                   key={m.url}
@@ -52,11 +52,11 @@ function TweetMedia({mediaDetails}: {mediaDetails: Array<MediaDetails>}) {
           case 'video': {
             return (
               <a
+                key={m.media_url_https}
                 href={m.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block"
-                key={m.url}
               >
                 <Image
                   key={m.url}
@@ -68,6 +68,7 @@ function TweetMedia({mediaDetails}: {mediaDetails: Array<MediaDetails>}) {
               </a>
             )
           }
+
           default: {
             return null
           }
@@ -104,21 +105,21 @@ function QuotedTweet({text, user}: Pick<Tweet, 'user' | 'text'>) {
   )
 }
 
-function TweetContent({tweetData}: {tweetData: Tweet}) {
-  const tweetDate = new Date(tweetData.created_at)
+function TweetContent({tweet}: {tweet: EnrichedTweet}) {
+  const tweetDate = new Date(tweet.created_at)
 
   return (
     <div className="relative rounded-xl border bg-white p-8 shadow-md">
       <a
-        href={`https://x.com/${tweetData.user.screen_name}`}
+        href={`https://x.com/${tweet.user.screen_name}`}
         target="_blank"
         rel="noopener noreferrer"
         className="group flex items-center gap-4"
       >
         <Image
           className="rounded-full"
-          src={tweetData.user.profile_image_url_https}
-          alt={`${tweetData.user.name}'s profile picture`}
+          src={tweet.user.profile_image_url_https}
+          alt={`${tweet.user.name}'s profile picture`}
           height="40"
           width="40"
           style={{
@@ -128,38 +129,65 @@ function TweetContent({tweetData}: {tweetData: Tweet}) {
         />
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-black group-hover:hover:underline">
-            {tweetData.user.name}
+            {tweet.user.name}
           </p>
           <p className="text-gray-400 group-hover:hover:underline">
-            @{tweetData.user.screen_name}
+            @{tweet.user.screen_name}
           </p>
         </div>
       </a>
 
-      <p className="mt-4 text-gray-600">
-        {tweetData.text.slice(
-          tweetData.display_text_range[0],
-          tweetData.display_text_range[1],
-        )}
-      </p>
+      {tweet.entities.map((item, i) => {
+        switch (item.type) {
+          case 'hashtag':
+          case 'mention':
+          case 'url':
+          case 'symbol':
+            return (
+              <a
+                key={i}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sky-500"
+              >
+                {item.text}
+              </a>
+            )
+          case 'media':
+            // Media text is currently never displayed, some tweets however might have indices
+            // that do match `display_text_range` so for those cases we ignore the content.
+            return
+          default:
+            // We use `dangerouslySetInnerHTML` to preserve the text encoding.
+            // https://github.com/vercel-labs/react-tweet/issues/29
+            return (
+              <span
+                key={i}
+                className="mt-4 text-gray-600"
+                dangerouslySetInnerHTML={{__html: item.text}}
+              />
+            )
+        }
+      })}
 
-      {tweetData.mediaDetails ? (
+      {tweet.mediaDetails ? (
         <div className="mt-2">
-          <TweetMedia mediaDetails={tweetData.mediaDetails} />
+          <TweetMedia mediaDetails={tweet.mediaDetails} />
         </div>
       ) : null}
 
-      {tweetData.quoted_tweet ? (
+      {tweet.quoted_tweet ? (
         <a
           href={getTweetUrl(
-            tweetData.quoted_tweet.user.screen_name,
-            tweetData.quoted_tweet.id_str,
+            tweet.quoted_tweet.user.screen_name,
+            tweet.quoted_tweet.id_str,
           )}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-2 block rounded-md border bg-gray-50 p-4 text-sm shadow-md hover:bg-gray-100"
         >
-          <QuotedTweet {...tweetData.quoted_tweet} />
+          <QuotedTweet {...tweet.quoted_tweet} />
         </a>
       ) : null}
 
@@ -190,9 +218,7 @@ function TweetContent({tweetData}: {tweetData: Tweet}) {
             >
               <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
             </svg>
-            <span className="ml-1 text-red-500">
-              {tweetData.favorite_count}
-            </span>
+            <span className="ml-1 text-red-500">{tweet.favorite_count}</span>
           </div>
           <div className="flex items-center">
             <svg
@@ -210,14 +236,14 @@ function TweetContent({tweetData}: {tweetData: Tweet}) {
               <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" />
             </svg>
             <span className="ml-1 text-green-500">
-              {tweetData.conversation_count}
+              {tweet.conversation_count}
             </span>
           </div>
         </div>
       </div>
 
       <a
-        href={getTweetUrl(tweetData.user.screen_name, tweetData.id_str)}
+        href={getTweetUrl(tweet.user.screen_name, tweet.id_str)}
         target="_blank"
         rel="noopener noreferrer"
         className="flex justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
@@ -231,6 +257,9 @@ function TweetContent({tweetData}: {tweetData: Tweet}) {
 export function TweetContainer({tweet, tweetData, deleteTweet}: TweetContent) {
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
+  const enrichedTweet = enrichTweet(tweetData)
+
+  console.log('logging tweet: ', enrichedTweet)
 
   async function handleDeleteTweet(tweetId: number) {
     startTransition(async () => {
@@ -241,7 +270,7 @@ export function TweetContainer({tweet, tweetData, deleteTweet}: TweetContent) {
 
   return (
     <div className={classNames({'opacity-50': isPending})}>
-      <TweetContent tweetData={tweetData} />
+      <TweetContent tweet={enrichedTweet} />
 
       <div className="-mt-4 rounded-xl bg-slate-100 p-8 pb-6 pt-10">
         {tweet.tags?.length ? (
