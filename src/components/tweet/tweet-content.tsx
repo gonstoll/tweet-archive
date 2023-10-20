@@ -6,6 +6,7 @@ import type {MediaDetails, Tweet} from 'react-tweet/api'
 import type {UserTweet} from '~/db/models/tweet'
 import {classNames} from '~/utils/classnames'
 import {Tag} from '../tag'
+import {enrichTweet} from 'react-tweet'
 
 type TweetContent = {
   tweet: UserTweet
@@ -135,7 +136,12 @@ function TweetContent({tweetData}: {tweetData: Tweet}) {
         </div>
       </a>
 
-      <p className="mt-4 text-gray-600">{tweetData.text}</p>
+      <p className="mt-4 text-gray-600">
+        {tweetData.text.slice(
+          tweetData.display_text_range[0],
+          tweetData.display_text_range[1],
+        )}
+      </p>
 
       {tweetData.mediaDetails ? (
         <div className="mt-2">
@@ -223,7 +229,6 @@ function TweetContent({tweetData}: {tweetData: Tweet}) {
 }
 
 export function TweetContainer({tweet, tweetData, deleteTweet}: TweetContent) {
-  console.log('logging tweetData', tweetData)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
 
