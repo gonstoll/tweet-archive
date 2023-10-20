@@ -1,12 +1,11 @@
 'use client'
 import Image from 'next/image'
 import {useRouter} from 'next/navigation'
-import React, {useTransition} from 'react'
+import {useTransition} from 'react'
 import type {Tweet} from 'react-tweet/api'
 import type {UserTweet} from '~/db/models/tweet'
 import {classNames} from '~/utils/classnames'
 import {Tag} from '../tag'
-import Link from 'next/link'
 
 type TweetContent = {
   tweet: UserTweet
@@ -18,35 +17,29 @@ function getTweetUrl(handle: string, tweetId: string) {
   return `https://x.com/${handle}/status/${tweetId}`
 }
 
-function TweetBody({
-  text,
-  user,
-  children,
-}: Pick<Tweet, 'user' | 'text'> & {children?: React.ReactNode}) {
+function QuotedTweet({text, user}: Pick<Tweet, 'user' | 'text'>) {
   return (
     <>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
         <Image
           className="rounded-full"
           src={user.profile_image_url_https}
           alt={`${user.name}'s profile picture`}
-          height="40"
-          width="40"
+          height="30"
           style={{
-            aspectRatio: '40/40',
+            aspectRatio: '30/30',
             objectFit: 'cover',
           }}
+          width="30"
         />
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-black">
+          <p className="text-xs font-semibold uppercase tracking-wide text-black">
             {user.name}
           </p>
           <p className="text-gray-400">@{user.screen_name}</p>
         </div>
       </div>
-      <p className="mt-4 text-gray-600">{text}</p>
-
-      {children}
+      <p className="mt-4 text-gray-500 dark:text-gray-300">{text}</p>
     </>
   )
 }
@@ -56,83 +49,110 @@ function TweetContent({tweetData}: {tweetData: Tweet}) {
 
   return (
     <div className="relative rounded-xl border bg-white p-8 shadow-md">
-      <TweetBody {...tweetData}>
-        {tweetData.quoted_tweet ? (
-          <a
-            href={getTweetUrl(
-              tweetData.quoted_tweet.user.screen_name,
-              tweetData.quoted_tweet.id_str,
-            )}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 block rounded-md border bg-slate-50 p-6 text-sm shadow-sm hover:bg-slate-100"
-          >
-            <TweetBody {...tweetData.quoted_tweet} />
-          </a>
-        ) : null}
-
-        <div className="mb-2 mt-4 border-b pb-2 text-sm text-gray-400">
-          {tweetDate.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-          })}
+      <a
+        href={`https://x.com/${tweetData.user.screen_name}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group flex items-center gap-4"
+      >
+        <Image
+          className="rounded-full"
+          src={tweetData.user.profile_image_url_https}
+          alt={`${tweetData.user.name}'s profile picture`}
+          height="40"
+          width="40"
+          style={{
+            aspectRatio: '40/40',
+            objectFit: 'cover',
+          }}
+        />
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-black group-hover:hover:underline">
+            {tweetData.user.name}
+          </p>
+          <p className="text-gray-400 group-hover:hover:underline">
+            @{tweetData.user.screen_name}
+          </p>
         </div>
+      </a>
 
-        <div className="mb-6 flex items-center">
-          <div className="flex gap-2">
-            <div className="flex items-center">
-              <svg
-                className="h-6 w-6 text-red-500"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-              </svg>
-              <span className="ml-1 text-red-500">
-                {tweetData.favorite_count}
-              </span>
-            </div>
-            <div className="flex items-center">
-              <svg
-                className="h-6 w-6 text-green-500"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" />
-              </svg>
-              <span className="ml-1 text-green-500">
-                {tweetData.conversation_count}
-              </span>
-            </div>
-          </div>
-        </div>
+      <p className="mt-4 text-gray-600">{tweetData.text}</p>
 
+      {tweetData.quoted_tweet ? (
         <a
-          href={getTweetUrl(tweetData.user.screen_name, tweetData.id_str)}
+          href={getTweetUrl(
+            tweetData.quoted_tweet.user.screen_name,
+            tweetData.quoted_tweet.id_str,
+          )}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+          className="mt-2 block rounded-md border bg-gray-50 p-4 text-sm shadow-md hover:bg-gray-100"
         >
-          Go to tweet
+          <QuotedTweet {...tweetData.quoted_tweet} />
         </a>
-      </TweetBody>
+      ) : null}
+
+      <div className="mb-2 mt-4 border-b pb-2 text-sm text-gray-400">
+        {tweetDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+        })}
+      </div>
+
+      <div className="mb-6 flex items-center">
+        <div className="flex gap-2">
+          <div className="flex items-center">
+            <svg
+              className="h-6 w-6 text-red-500"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+            </svg>
+            <span className="ml-1 text-red-500">
+              {tweetData.favorite_count}
+            </span>
+          </div>
+          <div className="flex items-center">
+            <svg
+              className="h-6 w-6 text-green-500"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" />
+            </svg>
+            <span className="ml-1 text-green-500">
+              {tweetData.conversation_count}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <a
+        href={getTweetUrl(tweetData.user.screen_name, tweetData.id_str)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+      >
+        Go to tweet
+      </a>
     </div>
   )
 }
@@ -151,6 +171,7 @@ export function TweetContainer({tweet, tweetData, deleteTweet}: TweetContent) {
   return (
     <div className={classNames({'opacity-50': isPending})}>
       <TweetContent tweetData={tweetData} />
+
       <div className="-mt-4 rounded-xl bg-slate-100 p-8 pb-6 pt-10">
         {tweet.tags?.length ? (
           <div className="mb-4 flex flex-wrap gap-2">
