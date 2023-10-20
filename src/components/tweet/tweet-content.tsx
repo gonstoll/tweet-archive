@@ -100,7 +100,7 @@ function QuotedTweet({text, user}: Pick<Tweet, 'user' | 'text'>) {
           <p className="text-gray-400">@{user.screen_name}</p>
         </div>
       </div>
-      <p className="mt-4 text-gray-500 dark:text-gray-300">{text}</p>
+      <p className="mt-4 whitespace-pre-wrap text-gray-500">{text}</p>
     </>
   )
 }
@@ -114,7 +114,7 @@ function TweetContent({tweet}: {tweet: EnrichedTweet}) {
         href={`https://x.com/${tweet.user.screen_name}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="group flex items-center gap-4"
+        className="group mb-2 flex items-center gap-4"
       >
         <Image
           className="rounded-full"
@@ -164,7 +164,7 @@ function TweetContent({tweet}: {tweet: EnrichedTweet}) {
             return (
               <span
                 key={i}
-                className="mt-4 text-gray-600"
+                className="mt-4 whitespace-pre-wrap text-gray-600"
                 dangerouslySetInnerHTML={{__html: item.text}}
               />
             )
