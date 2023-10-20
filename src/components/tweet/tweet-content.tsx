@@ -100,7 +100,7 @@ function QuotedTweet({text, user}: Pick<Tweet, 'user' | 'text'>) {
           <p className="text-gray-400">@{user.screen_name}</p>
         </div>
       </div>
-      <p className="mt-4 text-gray-500 dark:text-gray-300">{text}</p>
+      <p className="mt-4 whitespace-pre-wrap text-gray-500">{text}</p>
     </>
   )
 }
