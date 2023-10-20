@@ -6,9 +6,6 @@ import {Tweet} from '~/components/tweet'
 import {createTag, deleteTag, getTags} from '~/db/models/tag'
 import {getTweets, getTweetsCount} from '~/db/models/tweet'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
 type Props = {
   searchParams: Record<string, string | string[] | undefined>
 }
@@ -80,9 +77,11 @@ export default async function Home({searchParams}: Props) {
           </Link>
         </div>
       </div>
-      <div className="mb-auto gap-4 md:columns-2 xl:columns-3">
+      <div className="mb-auto gap-6 md:columns-2 xl:columns-3">
         {tweets.map(tweet => (
-          <Tweet key={tweet.id} tweet={tweet} />
+          <div key={tweet.id} className="mb-6 break-inside-avoid">
+            <Tweet key={tweet.id} tweet={tweet} />
+          </div>
         ))}
       </div>
       <div className="mt-8 flex flex-col items-center justify-end gap-4 md:flex-row">
