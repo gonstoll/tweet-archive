@@ -14,6 +14,10 @@ type TweetContent = {
   deleteTweet(tweetId: number): Promise<void>
 }
 
+function getTweetUrl(handle: string, tweetId: string) {
+  return `https://x.com/${handle}/status/${tweetId}`
+}
+
 function QuotedTweet({text, user}: Pick<Tweet, 'user' | 'text'>) {
   return (
     <div className="rounded-md border p-4 text-sm shadow-md">
@@ -54,32 +58,52 @@ function TweetContent({tweetData}: {tweetData: Tweet}) {
           src={tweetData.user.profile_image_url_https}
           alt={`${tweetData.user.name}'s profile picture`}
           height="40"
+          width="40"
           style={{
             aspectRatio: '40/40',
             objectFit: 'cover',
           }}
-          width="40"
         />
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-black dark:text-white">
+          <p className="text-sm font-semibold uppercase tracking-wide text-black">
             {tweetData.user.name}
           </p>
-          <p className="text-gray-400 dark:text-gray-300">
-            @{tweetData.user.screen_name}
-          </p>
+          <p className="text-gray-400">@{tweetData.user.screen_name}</p>
         </div>
       </div>
-      <p className="mt-4 text-gray-500 dark:text-gray-300">{tweetData.text}</p>
+
+      <p className="mt-4 text-gray-600">{tweetData.text}</p>
+
       {tweetData.quoted_tweet ? (
         <div className="mt-2">
-          <QuotedTweet {...tweetData.quoted_tweet} />
+          <a
+            href={getTweetUrl(
+              tweetData.quoted_tweet.user.screen_name,
+              tweetData.quoted_tweet.id_str,
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <QuotedTweet {...tweetData.quoted_tweet} />
+          </a>
         </div>
       ) : null}
-      <div className="my-6 flex flex-wrap items-center justify-between">
-        <div className="flex space-x-2 text-gray-400 dark:text-gray-300">
+
+      <div className="mb-2 mt-4 border-b pb-2 text-sm text-gray-400">
+        {tweetDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+        })}
+      </div>
+
+      <div className="mb-6 flex items-center">
+        <div className="flex gap-2">
           <div className="flex items-center">
             <svg
-              className=" h-6 w-6 text-red-500"
+              className="h-6 w-6 text-red-500"
               fill="none"
               height="24"
               stroke="currentColor"
@@ -98,7 +122,7 @@ function TweetContent({tweetData}: {tweetData: Tweet}) {
           </div>
           <div className="flex items-center">
             <svg
-              className=" h-6 w-6 text-green-500"
+              className="h-6 w-6 text-green-500"
               fill="none"
               height="24"
               stroke="currentColor"
@@ -116,18 +140,10 @@ function TweetContent({tweetData}: {tweetData: Tweet}) {
             </span>
           </div>
         </div>
-        <div className="text-sm text-gray-400 dark:text-gray-300">
-          {tweetDate.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-          })}
-        </div>
       </div>
+
       <a
-        href={`https://x.com/${tweetData.user.screen_name}/status/${tweetData.id_str}`}
+        href={getTweetUrl(tweetData.user.screen_name, tweetData.id_str)}
         target="_blank"
         rel="noopener noreferrer"
         className="flex justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
