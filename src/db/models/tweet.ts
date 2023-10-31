@@ -167,7 +167,7 @@ export async function getTweetById(id: string) {
   })
 
   if (!tweet) {
-    return null
+    throw new Error(`Tweet with id ${id} could not be found`)
   }
 
   const tags = tweet.tweetsToTags.map(t => t.tag)
