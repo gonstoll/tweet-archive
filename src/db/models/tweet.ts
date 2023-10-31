@@ -1,5 +1,5 @@
 import {auth} from '@clerk/nextjs'
-import {and, eq, exists, inArray, like, type InferModel, sql} from 'drizzle-orm'
+import {and, eq, exists, inArray, like, type InferModel} from 'drizzle-orm'
 import {revalidatePath} from 'next/cache'
 import {db, ratelimit} from '../db'
 import * as schema from '../schema'
@@ -7,6 +7,7 @@ import type {Tag} from './tag'
 
 export type Tweet = InferModel<typeof schema.tweet>
 export type UserTweet = Tweet & {tags?: Array<Tag>; tweetId: string}
+
 type GetTweetsOpts = {
   search: string
   tags: string
@@ -21,7 +22,7 @@ export async function getTweetsCount({
   const {userId} = auth()
 
   if (!userId) {
-    return 0
+    throw new Error('You must login to see this content')
   }
 
   const transformedTags = tags
@@ -75,7 +76,7 @@ export async function getTweets({
   const {userId} = auth()
 
   if (!userId) {
-    return []
+    throw new Error('You must login to see this content')
   }
 
   const transformedTags = tags
@@ -190,6 +191,16 @@ function getTweetId(tweetUrl: string) {
   return tweetId
 }
 
+async function isTweetDuplicated(tweetId: string) {
+  const existingTweet = await db.query.tweet.findFirst({
+    where: tweets => {
+      return and(like(tweets.url, `%${tweetId}%`))
+    },
+  })
+
+  return Boolean(existingTweet)
+}
+
 export async function createTweet({
   tagIds,
   ...tweet
@@ -197,7 +208,7 @@ export async function createTweet({
   const user = auth()
 
   if (!user.userId) {
-    throw new Error('User not logged in')
+    throw new Error('You must login to see this content')
   }
 
   const {success} = await ratelimit.limit(user.userId)
@@ -206,13 +217,7 @@ export async function createTweet({
     throw new Error('Rate limit exceeded')
   }
 
-  const tweetId = getTweetId(tweet.url)
-
-  const existingTweet = await db.query.tweet.findFirst({
-    where: tweets => {
-      return and(like(tweets.url, `%${tweetId}%`))
-    },
-  })
+  const existingTweet = await isTweetDuplicated(getTweetId(tweet.url))
 
   if (existingTweet) {
     throw new Error('That tweet already exists')

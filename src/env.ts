@@ -37,7 +37,7 @@ try {
     const {fieldErrors} = error.flatten()
     const errorMessage = Object.entries(fieldErrors)
       .map(([field, errors]) =>
-        errors ? `${field}: ${errors.join(', ')}` : field
+        errors ? `${field}: ${errors.join(', ')}` : field,
       )
       .join('\n  ')
     throw new Error(`Missing environment variables:\n  ${errorMessage}`)

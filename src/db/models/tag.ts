@@ -10,7 +10,7 @@ export async function getTags() {
   const {userId} = auth()
 
   if (!userId) {
-    return []
+    throw new Error('You must login to see this content')
   }
 
   const tags = await db.query.tag.findMany({
@@ -24,7 +24,7 @@ export async function createTag(tag: Omit<Tag, 'userId' | 'id'>) {
   const user = auth()
 
   if (!user.userId) {
-    throw new Error('User not logged in')
+    throw new Error('You must login to see this content')
   }
 
   const {success} = await ratelimit.limit(user.userId)
@@ -40,7 +40,7 @@ export async function deleteTag(tagId: number) {
   const user = auth()
 
   if (!user.userId) {
-    throw new Error('User not logged in')
+    throw new Error('You must login to see this content')
   }
 
   const {success} = await ratelimit.limit(user.userId)
