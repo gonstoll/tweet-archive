@@ -18,6 +18,8 @@ type GetTweetsOpts = {
   tweetsPerPage: number
 }
 
+// This is no bueno, but it's the only way I got it to work
+// TODO: Find a better way to do this
 export async function getTweetsCount({
   tags,
   search,
