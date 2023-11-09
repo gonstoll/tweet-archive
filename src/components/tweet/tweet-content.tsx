@@ -7,6 +7,7 @@ import type {MediaDetails, Tweet} from 'react-tweet/api'
 import type {UserTweet} from '~/db/models/tweet'
 import {classNames} from '~/utils/classnames'
 import {Tag} from '../tag'
+import Link from 'next/link'
 
 type TweetContent = {
   tweet: UserTweet
@@ -259,8 +260,6 @@ export function TweetContainer({tweet, tweetData, deleteTweet}: TweetContent) {
   const router = useRouter()
   const enrichedTweet = enrichTweet(tweetData)
 
-  console.log('logging tweet: ', enrichedTweet)
-
   async function handleDeleteTweet(tweetId: number) {
     startTransition(async () => {
       await deleteTweet(tweetId)
@@ -292,12 +291,20 @@ export function TweetContainer({tweet, tweetData, deleteTweet}: TweetContent) {
               day: 'numeric',
             })}
           </p>
-          <button
-            className="rounded-md border border-red-500 bg-white px-3 py-1 text-sm text-red-700 hover:bg-red-50"
-            onClick={() => handleDeleteTweet(tweet.id)}
-          >
-            Delete
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-900 hover:bg-gray-50"
+              href={`/tweet/edit/${tweet.id}`}
+            >
+              Edit
+            </Link>
+            <button
+              className="rounded-md border border-red-500 bg-white px-3 py-1 text-sm text-red-700 hover:bg-red-50"
+              onClick={() => handleDeleteTweet(tweet.id)}
+            >
+              Delete
+            </button>
+          </div>
         </div>
       </div>
     </div>

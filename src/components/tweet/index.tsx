@@ -13,8 +13,8 @@ async function getTweetData(tweetId: string) {
   return res.json() as Promise<{data: Tweet}>
 }
 
-export async function Tweet({tweet}: {tweet?: UserTweet}) {
-  const tweetData = tweet ? await getTweetData(tweet.tweetId) : undefined
+export async function Tweet({tweet}: {tweet: UserTweet}) {
+  const tweetData = await getTweetData(tweet.tweetId)
 
   async function handleDeleteTweet(tweetId: number) {
     'use server'
@@ -22,13 +22,11 @@ export async function Tweet({tweet}: {tweet?: UserTweet}) {
     revalidatePath('/')
   }
 
-  return tweet && tweetData ? (
+  return (
     <TweetContainer
       tweet={tweet}
       tweetData={tweetData.data}
       deleteTweet={handleDeleteTweet}
     />
-  ) : (
-    <h1>New tweet!</h1>
   )
 }

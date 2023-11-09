@@ -1,12 +1,16 @@
 import {auth} from '@clerk/nextjs'
-import {and, eq, exists, inArray, like, type InferModel, sql} from 'drizzle-orm'
-import {revalidatePath} from 'next/cache'
+import {and, eq, exists, inArray, like, type InferModel} from 'drizzle-orm'
 import {db, ratelimit} from '../db'
 import * as schema from '../schema'
 import type {Tag} from './tag'
 
 export type Tweet = InferModel<typeof schema.tweet>
 export type UserTweet = Tweet & {tags?: Array<Tag>; tweetId: string}
+export type NewTweet = Omit<Tweet, 'id' | 'userId'> & {tagIds?: string}
+export type UpdatedTweet = Omit<Tweet, 'id' | 'userId' | 'createdAt'> & {
+  tagIds?: string
+}
+
 type GetTweetsOpts = {
   search: string
   tags: string
@@ -14,6 +18,8 @@ type GetTweetsOpts = {
   tweetsPerPage: number
 }
 
+// This is no bueno, but it's the only way I got it to work
+// TODO: Find a better way to do this
 export async function getTweetsCount({
   tags,
   search,
@@ -21,7 +27,7 @@ export async function getTweetsCount({
   const {userId} = auth()
 
   if (!userId) {
-    return 0
+    throw new Error('You must login to see this content')
   }
 
   const transformedTags = tags
@@ -75,7 +81,7 @@ export async function getTweets({
   const {userId} = auth()
 
   if (!userId) {
-    return []
+    throw new Error('You must login to see this content')
   }
 
   const transformedTags = tags
@@ -166,7 +172,7 @@ export async function getTweetById(id: string) {
   })
 
   if (!tweet) {
-    return null
+    throw new Error(`Tweet with id ${id} could not be found`)
   }
 
   const tags = tweet.tweetsToTags.map(t => t.tag)
@@ -190,14 +196,21 @@ function getTweetId(tweetUrl: string) {
   return tweetId
 }
 
-export async function createTweet({
-  tagIds,
-  ...tweet
-}: Omit<Tweet, 'id' | 'userId'> & {tagIds?: Array<number>}) {
+async function isTweetDuplicated(tweetId: string) {
+  const existingTweet = await db.query.tweet.findFirst({
+    where: tweets => {
+      return and(like(tweets.url, `%${tweetId}%`))
+    },
+  })
+
+  return Boolean(existingTweet)
+}
+
+export async function createTweet({tagIds, ...tweet}: NewTweet) {
   const user = auth()
 
   if (!user.userId) {
-    throw new Error('User not logged in')
+    throw new Error('You must login to see this content')
   }
 
   const {success} = await ratelimit.limit(user.userId)
@@ -206,31 +219,34 @@ export async function createTweet({
     throw new Error('Rate limit exceeded')
   }
 
-  const tweetId = getTweetId(tweet.url)
-
-  const existingTweet = await db.query.tweet.findFirst({
-    where: tweets => {
-      return and(like(tweets.url, `%${tweetId}%`))
-    },
-  })
+  const existingTweet = await isTweetDuplicated(getTweetId(tweet.url))
 
   if (existingTweet) {
     throw new Error('That tweet already exists')
   }
 
-  const newTweet = await db
-    .insert(schema.tweet)
-    .values({...tweet, userId: user.userId})
+  try {
+    const newTweet = await db
+      .insert(schema.tweet)
+      .values({...tweet, userId: user.userId})
 
-  if (tagIds?.length) {
-    await db
-      .insert(schema.tweetsToTags)
-      .values(
-        tagIds.map(id => ({tweetId: Number(newTweet.insertId), tagId: id})),
+    const tagsArray = tagIds
+      ?.split(',')
+      .map(tag => tag.trim())
+      .filter(Boolean)
+
+    if (tagsArray?.length) {
+      await db.insert(schema.tweetsToTags).values(
+        tagsArray.map(id => ({
+          tweetId: Number(newTweet.insertId),
+          tagId: Number(id),
+        })),
       )
+    }
+  } catch (error) {
+    console.error(error)
+    throw new Error('Something went wrong when creating the tweet')
   }
-
-  revalidatePath('/')
 }
 
 export async function deleteTweet(tweetId: number) {
@@ -246,8 +262,57 @@ export async function deleteTweet(tweetId: number) {
     throw new Error('Rate limit exceeded')
   }
 
-  await db.delete(schema.tweet).where(eq(schema.tweet.id, tweetId))
-  await db
-    .delete(schema.tweetsToTags)
-    .where(eq(schema.tweetsToTags.tweetId, tweetId))
+  try {
+    await db.delete(schema.tweet).where(eq(schema.tweet.id, tweetId))
+    await db
+      .delete(schema.tweetsToTags)
+      .where(eq(schema.tweetsToTags.tweetId, tweetId))
+  } catch (error) {
+    console.error(error)
+    throw new Error('Something went wrong when deleting the tweet')
+  }
+}
+
+export async function editTweet(tweet: UpdatedTweet & {id: string}) {
+  const user = auth()
+
+  if (!user.userId) {
+    throw new Error('User not logged in')
+  }
+
+  const {success} = await ratelimit.limit(user.userId)
+
+  if (!success) {
+    throw new Error('Rate limit exceeded')
+  }
+
+  const {tagIds, id, ...restTweet} = tweet
+
+  try {
+    await db
+      .update(schema.tweet)
+      .set(restTweet)
+      .where(eq(schema.tweet.id, Number(tweet.id)))
+
+    await db
+      .delete(schema.tweetsToTags)
+      .where(eq(schema.tweetsToTags.tweetId, Number(tweet.id)))
+
+    const tagsArray = tweet.tagIds
+      ?.split(',')
+      .map(tag => tag.trim())
+      .filter(Boolean)
+
+    if (tagsArray?.length) {
+      await db.insert(schema.tweetsToTags).values(
+        tagsArray.map(id => ({
+          tweetId: Number(tweet.id),
+          tagId: Number(id),
+        })),
+      )
+    }
+  } catch (error) {
+    console.error(error)
+    throw new Error('Something went wrong when updating the tweet')
+  }
 }
