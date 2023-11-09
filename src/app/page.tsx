@@ -1,9 +1,7 @@
-import {revalidatePath} from 'next/cache'
 import Link from 'next/link'
 import {Search} from '~/components/search'
 import {TagsFilter} from '~/components/tags-filter'
 import {Tweet} from '~/components/tweet'
-import {createTag, deleteTag, getTags} from '~/db/models/tag'
 import {getTweets, getTweetsCount} from '~/db/models/tweet'
 
 type Props = {
