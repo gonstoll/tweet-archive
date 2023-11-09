@@ -1,6 +1,5 @@
 import {auth} from '@clerk/nextjs'
 import {and, eq, exists, inArray, like, type InferModel} from 'drizzle-orm'
-import {revalidatePath} from 'next/cache'
 import {db, ratelimit} from '../db'
 import * as schema from '../schema'
 import type {Tag} from './tag'
@@ -224,25 +223,28 @@ export async function createTweet({tagIds, ...tweet}: NewTweet) {
     throw new Error('That tweet already exists')
   }
 
-  const newTweet = await db
-    .insert(schema.tweet)
-    .values({...tweet, userId: user.userId})
+  try {
+    const newTweet = await db
+      .insert(schema.tweet)
+      .values({...tweet, userId: user.userId})
 
-  const tagsArray = tagIds
-    ?.split(',')
-    .map(tag => tag.trim())
-    .filter(Boolean)
+    const tagsArray = tagIds
+      ?.split(',')
+      .map(tag => tag.trim())
+      .filter(Boolean)
 
-  if (tagsArray?.length) {
-    await db.insert(schema.tweetsToTags).values(
-      tagsArray.map(id => ({
-        tweetId: Number(newTweet.insertId),
-        tagId: Number(id),
-      })),
-    )
+    if (tagsArray?.length) {
+      await db.insert(schema.tweetsToTags).values(
+        tagsArray.map(id => ({
+          tweetId: Number(newTweet.insertId),
+          tagId: Number(id),
+        })),
+      )
+    }
+  } catch (error) {
+    console.error(error)
+    throw new Error('Something went wrong when creating the tweet')
   }
-
-  revalidatePath('/')
 }
 
 export async function deleteTweet(tweetId: number) {
@@ -258,10 +260,15 @@ export async function deleteTweet(tweetId: number) {
     throw new Error('Rate limit exceeded')
   }
 
-  await db.delete(schema.tweet).where(eq(schema.tweet.id, tweetId))
-  await db
-    .delete(schema.tweetsToTags)
-    .where(eq(schema.tweetsToTags.tweetId, tweetId))
+  try {
+    await db.delete(schema.tweet).where(eq(schema.tweet.id, tweetId))
+    await db
+      .delete(schema.tweetsToTags)
+      .where(eq(schema.tweetsToTags.tweetId, tweetId))
+  } catch (error) {
+    console.error(error)
+    throw new Error('Something went wrong when deleting the tweet')
+  }
 }
 
 export async function editTweet(tweet: UpdatedTweet & {id: string}) {
@@ -278,26 +285,32 @@ export async function editTweet(tweet: UpdatedTweet & {id: string}) {
   }
 
   const {tagIds, id, ...restTweet} = tweet
-  await db
-    .update(schema.tweet)
-    .set(restTweet)
-    .where(eq(schema.tweet.id, Number(tweet.id)))
 
-  await db
-    .delete(schema.tweetsToTags)
-    .where(eq(schema.tweetsToTags.tweetId, Number(tweet.id)))
+  try {
+    await db
+      .update(schema.tweet)
+      .set(restTweet)
+      .where(eq(schema.tweet.id, Number(tweet.id)))
 
-  const tagsArray = tweet.tagIds
-    ?.split(',')
-    .map(tag => tag.trim())
-    .filter(Boolean)
+    await db
+      .delete(schema.tweetsToTags)
+      .where(eq(schema.tweetsToTags.tweetId, Number(tweet.id)))
 
-  if (tagsArray?.length) {
-    await db.insert(schema.tweetsToTags).values(
-      tagsArray.map(id => ({
-        tweetId: Number(tweet.id),
-        tagId: Number(id),
-      })),
-    )
+    const tagsArray = tweet.tagIds
+      ?.split(',')
+      .map(tag => tag.trim())
+      .filter(Boolean)
+
+    if (tagsArray?.length) {
+      await db.insert(schema.tweetsToTags).values(
+        tagsArray.map(id => ({
+          tweetId: Number(tweet.id),
+          tagId: Number(id),
+        })),
+      )
+    }
+  } catch (error) {
+    console.error(error)
+    throw new Error('Something went wrong when updating the tweet')
   }
 }
