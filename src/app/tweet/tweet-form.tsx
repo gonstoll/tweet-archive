@@ -1,8 +1,6 @@
-'use client'
 import Link from 'next/link'
-import {useRouter} from 'next/navigation'
-import * as React from 'react'
 import {z} from 'zod'
+import {TagsFilter} from '~/components/tags-filter'
 import type {NewTweet, UpdatedTweet, UserTweet} from '~/db/models/tweet'
 
 export const newTweetSchema = z.object({
@@ -24,13 +22,11 @@ type EditTweetProps = {
 
 type Props = CreateTweetProps | EditTweetProps
 
-export function TweetFormContent({
-  children,
-  ...props
-}: React.PropsWithChildren<Props>) {
-  const router = useRouter()
+export function TweetForm(props: Props) {
+  const initialTags = props.type === 'edit' ? props.tweet.tags : undefined
 
   async function handleSubmit(formData: FormData) {
+    'use server'
     const url = formData.get('tweet-url')
     const description = formData.get('tweet-description')
     const tagIds = formData.get('tag-ids')
@@ -51,9 +47,6 @@ export function TweetFormContent({
     if (props.type === 'edit') {
       await props.handleEditTweet(parsedTweet)
     }
-
-    // router.push('/')
-    // router.refresh()
   }
 
   return (
@@ -85,8 +78,7 @@ export function TweetFormContent({
         </label>
       </div>
 
-      {/* TagsFilter slot */}
-      {children}
+      <TagsFilter type="select" initialTags={initialTags} />
 
       <div className="mt-6 flex items-center justify-end gap-4">
         <Link
