@@ -1,6 +1,8 @@
 # Tweet Archive
 
-The motivation behind this project is to have a place to store tweets that I find interesting. I have a tendency to retweet tweets that I find interesting, but obviously there's not a good way to search through them. This project is an attempt to solve this pain point.
+The motivation behind this project is to have a place to store tweets that I find interesting. I have a tendency to
+retweet tweets that I find interesting, but obviously there's not a good way to search through them. This project is an
+attempt to solve this pain point.
 
 ## Todo list
 
@@ -16,5 +18,6 @@ The motivation behind this project is to have a place to store tweets that I fin
 - [x] Delete tweets
 - [x] Pagination
 - [x] Disallow duplicated tweets
-- [ ] Edit tweet entry
+- [x] Edit tweet entry
+- [ ] Dark theme
 - [ ] Sort tweets by date
