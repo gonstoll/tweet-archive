@@ -48,24 +48,12 @@ export default async function Home({searchParams}: Props) {
   }
 
   const tweets = await getTweets({...sanitizedSearchParams, tweetsPerPage})
-  const tags = await getTags()
-
-  async function handleDeleteTag(tagId: number) {
-    'use server'
-    await deleteTag(tagId)
-    revalidatePath('/')
-  }
 
   return (
     <>
       <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center">
         <div className="lg:w-96">
-          <TagsFilter
-            tags={tags}
-            type="filter"
-            createTag={createTag}
-            deleteTag={handleDeleteTag}
-          />
+          <TagsFilter type="filter" />
         </div>
         <div className="flex flex-1 flex-col gap-8 lg:flex-row lg:items-end lg:gap-24">
           <Search />

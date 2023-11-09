@@ -3,55 +3,57 @@ import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import * as React from 'react'
 import {z} from 'zod'
-import {TagsFilter} from '~/components/tags-filter'
-import type {Tag} from '~/db/models/tag'
-import type {Tweet} from '~/db/models/tweet'
+import type {NewTweet, UpdatedTweet, UserTweet} from '~/db/models/tweet'
 
 export const newTweetSchema = z.object({
   url: z.string(),
   description: z.string().nullable(),
+  tagIds: z.string().optional(),
 })
 
-type NewTweet = Omit<Tweet, 'id' | 'userId'> & {tagIds?: Array<number>}
-type NewTag = Omit<Tag, 'id' | 'userId'>
-
-type Props = {
-  tags: Array<Tag>
+type CreateTweetProps = {
+  type: 'create'
   handleCreateTweet(tweet: NewTweet): Promise<void>
-  handleCreateTag(tag: NewTag): Promise<void>
-  handleDeleteTag(tagId: number): Promise<void>
 }
 
-export function TweetForm({
-  tags,
-  handleCreateTweet,
-  handleCreateTag,
-  handleDeleteTag,
-}: Props) {
-  const [selectedTags, setSelectedTags] = React.useState<Array<string>>()
+type EditTweetProps = {
+  type: 'edit'
+  tweet: UserTweet
+  handleEditTweet(tweet: UpdatedTweet): Promise<void>
+}
 
+type Props = CreateTweetProps | EditTweetProps
+
+export function TweetFormContent({
+  children,
+  ...props
+}: React.PropsWithChildren<Props>) {
   const router = useRouter()
 
   async function handleSubmit(formData: FormData) {
     const url = formData.get('tweet-url')
     const description = formData.get('tweet-description')
-    const tagIds = tags
-      .filter(tag => selectedTags?.includes(tag.name))
-      .map(t => t.id)
+    const tagIds = formData.get('tag-ids')
 
     const parsedTweet = newTweetSchema.parse({
       url,
       description,
-    })
-
-    await handleCreateTweet({
-      ...parsedTweet,
       tagIds,
-      createdAt: new Date(),
     })
 
-    router.push('/')
-    router.refresh()
+    if (props.type === 'create') {
+      await props.handleCreateTweet({
+        ...parsedTweet,
+        createdAt: new Date(),
+      })
+    }
+
+    if (props.type === 'edit') {
+      await props.handleEditTweet(parsedTweet)
+    }
+
+    // router.push('/')
+    // router.refresh()
   }
 
   return (
@@ -64,6 +66,7 @@ export function TweetForm({
             name="tweet-url"
             id="tweet-url"
             className="mt-1 block w-full rounded-md border-1 border-slate-200 p-2"
+            defaultValue={props.type === 'edit' ? props.tweet.url : ''}
           />
         </label>
       </div>
@@ -75,16 +78,16 @@ export function TweetForm({
             id="tweet-description"
             rows={3}
             className="mt-1 block w-full rounded-md border-1 border-slate-200 p-2"
+            defaultValue={
+              props.type === 'edit' ? props.tweet.description ?? '' : ''
+            }
           />
         </label>
       </div>
-      <TagsFilter
-        tags={tags}
-        type="select"
-        onChange={tags => setSelectedTags(tags)}
-        createTag={handleCreateTag}
-        deleteTag={handleDeleteTag}
-      />
+
+      {/* TagsFilter slot */}
+      {children}
+
       <div className="mt-6 flex items-center justify-end gap-4">
         <Link
           href="/"
@@ -96,7 +99,7 @@ export function TweetForm({
           type="submit"
           className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
         >
-          Add tweet
+          {props.type === 'create' ? 'Add tweet' : 'Save changes'}
         </button>
       </div>
     </form>

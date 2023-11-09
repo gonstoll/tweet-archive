@@ -7,6 +7,10 @@ import type {Tag} from './tag'
 
 export type Tweet = InferModel<typeof schema.tweet>
 export type UserTweet = Tweet & {tags?: Array<Tag>; tweetId: string}
+export type NewTweet = Omit<Tweet, 'id' | 'userId'> & {tagIds?: string}
+export type UpdatedTweet = Omit<Tweet, 'id' | 'userId' | 'createdAt'> & {
+  tagIds?: string
+}
 
 type GetTweetsOpts = {
   search: string
@@ -201,10 +205,7 @@ async function isTweetDuplicated(tweetId: string) {
   return Boolean(existingTweet)
 }
 
-export async function createTweet({
-  tagIds,
-  ...tweet
-}: Omit<Tweet, 'id' | 'userId'> & {tagIds?: Array<number>}) {
+export async function createTweet({tagIds, ...tweet}: NewTweet) {
   const user = auth()
 
   if (!user.userId) {
@@ -227,12 +228,18 @@ export async function createTweet({
     .insert(schema.tweet)
     .values({...tweet, userId: user.userId})
 
-  if (tagIds?.length) {
-    await db
-      .insert(schema.tweetsToTags)
-      .values(
-        tagIds.map(id => ({tweetId: Number(newTweet.insertId), tagId: id})),
-      )
+  const tagsArray = tagIds
+    ?.split(',')
+    .map(tag => tag.trim())
+    .filter(Boolean)
+
+  if (tagsArray?.length) {
+    await db.insert(schema.tweetsToTags).values(
+      tagsArray.map(id => ({
+        tweetId: Number(newTweet.insertId),
+        tagId: Number(id),
+      })),
+    )
   }
 
   revalidatePath('/')
@@ -255,4 +262,42 @@ export async function deleteTweet(tweetId: number) {
   await db
     .delete(schema.tweetsToTags)
     .where(eq(schema.tweetsToTags.tweetId, tweetId))
+}
+
+export async function editTweet(tweet: UpdatedTweet & {id: string}) {
+  const user = auth()
+
+  if (!user.userId) {
+    throw new Error('User not logged in')
+  }
+
+  const {success} = await ratelimit.limit(user.userId)
+
+  if (!success) {
+    throw new Error('Rate limit exceeded')
+  }
+
+  const {tagIds, id, ...restTweet} = tweet
+  await db
+    .update(schema.tweet)
+    .set(restTweet)
+    .where(eq(schema.tweet.id, Number(tweet.id)))
+
+  await db
+    .delete(schema.tweetsToTags)
+    .where(eq(schema.tweetsToTags.tweetId, Number(tweet.id)))
+
+  const tagsArray = tweet.tagIds
+    ?.split(',')
+    .map(tag => tag.trim())
+    .filter(Boolean)
+
+  if (tagsArray?.length) {
+    await db.insert(schema.tweetsToTags).values(
+      tagsArray.map(id => ({
+        tweetId: Number(tweet.id),
+        tagId: Number(id),
+      })),
+    )
+  }
 }

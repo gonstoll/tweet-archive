@@ -1,35 +1,15 @@
-import {createTag, deleteTag, getTags} from '~/db/models/tag'
-import {createTweet} from '~/db/models/tweet'
-import {TweetForm} from './tweet-form'
 import {revalidatePath} from 'next/cache'
+import {createTweet, type NewTweet} from '~/db/models/tweet'
+import {TweetForm} from '../tweet-form'
+import {redirect} from 'next/navigation'
 
-export default async function NewTweet() {
-  const tags = await getTags()
-
-  async function handleCreateTag(tag: any) {
-    'use server'
-    await createTag(tag)
-    revalidatePath('/tweet/new')
-  }
-
-  async function handleCreateTweet(tweet: any) {
+export default async function NewTweetPage() {
+  async function handleCreateTweet(tweet: NewTweet) {
     'use server'
     await createTweet(tweet)
     revalidatePath('/')
+    redirect('/')
   }
 
-  async function handleDeleteTag(tagId: number) {
-    'use server'
-    await deleteTag(tagId)
-    revalidatePath('/tweet/new')
-  }
-
-  return (
-    <TweetForm
-      tags={tags}
-      handleCreateTweet={handleCreateTweet}
-      handleCreateTag={handleCreateTag}
-      handleDeleteTag={handleDeleteTag}
-    />
-  )
+  return <TweetForm type="create" handleCreateTweet={handleCreateTweet} />
 }
