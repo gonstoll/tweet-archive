@@ -1,9 +1,6 @@
 import {SignIn} from '@clerk/nextjs'
 
 export default function Page() {
-  // if (true) {
-  //   return <div className='max-w' />
-  // }
   return (
     <SignIn
       appearance={{
