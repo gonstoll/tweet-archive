@@ -1,5 +1,6 @@
 'use client'
 import Image from 'next/image'
+import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {useTransition} from 'react'
 import {enrichTweet, type EnrichedTweet} from 'react-tweet'
@@ -7,7 +8,6 @@ import type {MediaDetails, Tweet} from 'react-tweet/api'
 import type {UserTweet} from '~/db/models/tweet'
 import {classNames} from '~/utils/classnames'
 import {Tag} from '../tag'
-import Link from 'next/link'
 
 type TweetContent = {
   tweet: UserTweet
@@ -271,7 +271,7 @@ export function TweetContainer({tweet, tweetData, deleteTweet}: TweetContent) {
     <div className={classNames({'opacity-50': isPending})}>
       <TweetContent tweet={enrichedTweet} />
 
-      <div className="-mt-4 rounded-xl bg-slate-100 p-8 pb-6 pt-10">
+      <div className="-mt-4 rounded-xl bg-zinc-200 p-8 pb-6 pt-10 dark:bg-zinc-800">
         {tweet.tags?.length ? (
           <div className="mb-4 flex flex-wrap gap-2">
             {tweet.tags.map(tag => (
@@ -280,10 +280,12 @@ export function TweetContainer({tweet, tweetData, deleteTweet}: TweetContent) {
           </div>
         ) : null}
         {tweet.description ? (
-          <p className="mb-2 text-sm text-gray-700">{tweet.description}</p>
+          <p className="mb-2 text-sm text-zinc-900 dark:text-zinc-100">
+            {tweet.description}
+          </p>
         ) : null}
         <div className="flex items-center justify-between">
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-zinc-400 dark:text-zinc-500">
             Archived on{' '}
             {new Date(tweet.createdAt).toLocaleDateString('en-US', {
               year: 'numeric',
@@ -293,13 +295,13 @@ export function TweetContainer({tweet, tweetData, deleteTweet}: TweetContent) {
           </p>
           <div className="flex items-center gap-2">
             <Link
-              className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-900 hover:bg-gray-50"
+              className="rounded-md border border-zinc-300 bg-zinc-50 px-3 py-1 text-sm text-zinc-900 hover:bg-zinc-100 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-zinc-900"
               href={`/tweet/edit/${tweet.id}`}
             >
               Edit
             </Link>
             <button
-              className="rounded-md border border-red-500 bg-white px-3 py-1 text-sm text-red-700 hover:bg-red-50"
+              className="rounded-md border border-red-500 bg-zinc-50 px-3 py-1 text-sm text-red-700 hover:bg-red-50 dark:border-red-500 dark:bg-zinc-900 dark:text-red-500 dark:hover:bg-red-950"
               onClick={() => handleDeleteTweet(tweet.id)}
             >
               Delete
