@@ -57,7 +57,7 @@ export default async function Home({searchParams}: Props) {
           <Search />
           <Link
             href="tweet/new"
-            className="flex items-center justify-center whitespace-nowrap rounded-md border border-sky-800 bg-sky-500 px-3 py-2 text-sm font-semibold text-white hover:bg-sky-800"
+            className="flex items-center justify-center whitespace-nowrap rounded-md border border-sky-800 bg-sky-500 px-3 py-2 text-sm font-semibold text-zinc-50 hover:bg-sky-600 dark:bg-sky-600 dark:text-zinc-100 dark:hover:bg-sky-900"
           >
             Add tweet
           </Link>
@@ -71,7 +71,7 @@ export default async function Home({searchParams}: Props) {
         ))}
       </div>
       <div className="mt-8 flex flex-col items-center justify-end gap-4 md:flex-row">
-        <p>
+        <p className="text-zinc-900 dark:text-zinc-100">
           Showing{' '}
           <span className="font-semibold">
             {(sanitizedSearchParams.page - 1) * tweetsPerPage + 1}
@@ -117,14 +117,14 @@ function PreviousPage({
   return notInFirstPage ? (
     <Link
       href={`/?${nextPageSearchParams}`}
-      className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+      className="rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-zinc-900"
     >
       Previous page
     </Link>
   ) : (
     <button
       disabled
-      className="cursor-not-allowed rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 opacity-50"
+      className="cursor-not-allowed rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm font-semibold text-zinc-900 opacity-40 dark:bg-zinc-950 dark:text-zinc-50 dark:opacity-30"
     >
       Previous page
     </button>
@@ -152,14 +152,14 @@ function NextPage({
   return notInLastPage ? (
     <Link
       href={`/?${nextPageSearchParams}`}
-      className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+      className="rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-zinc-900"
     >
       Next page
     </Link>
   ) : (
     <button
       disabled
-      className="cursor-not-allowed rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 opacity-50"
+      className="cursor-not-allowed rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm font-semibold text-zinc-900 opacity-40 dark:bg-zinc-950 dark:text-zinc-50 dark:opacity-30"
     >
       Next page
     </button>

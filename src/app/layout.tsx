@@ -43,13 +43,21 @@ export default function RootLayout({
                   afterSignOutUrl="/"
                   appearance={{
                     elements: {
-                      userButtonOuterIdentifier: {
-                        fontWeight: 400,
-                        fontSize: '0.875rem',
-                      },
-                      userButtonPopoverFooter: {
-                        display: 'none',
-                      },
+                      userButtonPopoverFooter: 'hidden',
+                      userButtonOuterIdentifier:
+                        'text-sm font-normal text-zinc-900 dark:text-zinc-100',
+                      userButtonPopoverCard:
+                        'bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 pb-2 shadow-lg',
+                      userPreview: 'mb-3',
+                      userPreviewTextContainer:
+                        'text-zinc-900 dark:text-zinc-100 text-sm',
+                      userPreviewSecondaryIdentifier:
+                        'text-zinc-900 dark:text-zinc-100 text-sm',
+                      userButtonPopoverActionButton: 'py-3',
+                      userButtonPopoverActionButtonIcon:
+                        'w-4 h-4 text-zinc-900 dark:text-zinc-100',
+                      userButtonPopoverActionButtonText:
+                        'text-sm text-zinc-900 dark:text-zinc-100',
                     },
                   }}
                 />
