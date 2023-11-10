@@ -8,7 +8,6 @@ const nextConfig = {
   },
   experimental: {
     serverComponentsExternalPackages: ['mysql2'],
-    serverActions: true,
   },
 }
 

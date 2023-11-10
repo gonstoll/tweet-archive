@@ -18,7 +18,7 @@ type Props = {
 
 function renderTag(tags: Array<Omit<Tag, 'userId'>>) {
   if (!tags.length) {
-    return <p className="text-gray-400">Select tags</p>
+    return <p className="text-zinc-400">Select tags</p>
   }
 
   return (
@@ -147,14 +147,16 @@ export function TagsFilterComponent({
         name="tag-ids"
         value={selectedTags.map(t => t.id).join(',')}
       />
-      <Ariakit.SelectLabel store={select}>Tags</Ariakit.SelectLabel>
+      <Ariakit.SelectLabel store={select}>
+        <span className="text-zinc-900 dark:text-zinc-100">Tags</span>
+      </Ariakit.SelectLabel>
       <div className="relative">
         <Ariakit.Select
           store={select}
-          className="mt-1 flex h-11 w-full items-center justify-between gap-1 whitespace-nowrap rounded-md border-1 border-slate-200 p-2"
+          className="mt-1 flex h-11 w-full items-center justify-between gap-1 whitespace-nowrap rounded-md border border-zinc-300 p-2 dark:border-zinc-700"
         >
           {renderTag(selectedTags)}
-          <Ariakit.SelectArrow />
+          <Ariakit.SelectArrow className="text-zinc-900 dark:text-zinc-100" />
         </Ariakit.Select>
         {isPending ? (
           <div
@@ -169,14 +171,14 @@ export function TagsFilterComponent({
           sameWidth
           store={select}
           gutter={4}
-          className="relative z-50 flex max-h-72 -translate-y-6 flex-col overflow-auto overscroll-contain rounded-md border-1 border-slate-300 bg-white opacity-0 duration-200 data-[enter]:translate-y-0 data-[enter]:opacity-100"
+          className="relative z-50 flex max-h-72 -translate-y-6 flex-col overflow-auto overscroll-contain rounded-md border border-zinc-300 bg-zinc-50 opacity-0 duration-200 data-[enter]:translate-y-0 data-[enter]:opacity-100 dark:border-zinc-700 dark:bg-zinc-900"
         >
-          <div className="sticky top-0 z-40 mb-2 w-full bg-white p-2">
+          <div className="sticky top-0 z-40 mb-2 w-full bg-zinc-50 p-2 dark:bg-zinc-900">
             <Ariakit.Combobox
               store={combobox}
               autoSelect
               placeholder="Search..."
-              className="h-10 w-full rounded-md border-1 border-slate-300 p-4"
+              className="h-10 w-full rounded-md border border-zinc-300 p-4 dark:border-zinc-700"
             />
           </div>
           <Ariakit.ComboboxList store={combobox}>
@@ -186,13 +188,13 @@ export function TagsFilterComponent({
                 focusOnHover
                 className="relative mr-2 flex flex-1 cursor-pointer items-center gap-2 p-2"
                 render={p => (
-                  <div className="group flex items-center justify-between pr-2 hover:bg-slate-100">
+                  <div className="group flex items-center justify-between pr-2 hover:bg-zinc-100 dark:hover:bg-zinc-800">
                     <Ariakit.SelectItem {...p} value={value.name}>
                       <Ariakit.SelectItemCheck />
                       <TagComponent tag={value} />
                     </Ariakit.SelectItem>
                     <button
-                      className="rounded-md border border-red-500 bg-white px-3 py-1 text-xs text-red-700 hover:group-hover:bg-red-50"
+                      className="rounded-md border border-red-500 bg-zinc-50 px-3 py-1 text-xs text-red-700 hover:group-hover:bg-red-50 dark:border-red-500 dark:bg-zinc-900 dark:text-red-500 dark:hover:group-hover:bg-red-950"
                       onClick={() => handleOnDeleteTag(value.id)}
                     >
                       Delete
