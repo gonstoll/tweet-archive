@@ -153,7 +153,7 @@ export function TagsFilterComponent({
       <div className="relative">
         <Ariakit.Select
           store={select}
-          className="mt-1 flex h-11 w-full items-center justify-between gap-1 whitespace-nowrap rounded-md border-1 border-zinc-300 p-2 dark:border-zinc-700"
+          className="mt-1 flex h-11 w-full items-center justify-between gap-1 whitespace-nowrap rounded-md border border-zinc-300 p-2 dark:border-zinc-700"
         >
           {renderTag(selectedTags)}
           <Ariakit.SelectArrow className="text-zinc-900 dark:text-zinc-100" />
@@ -171,14 +171,14 @@ export function TagsFilterComponent({
           sameWidth
           store={select}
           gutter={4}
-          className="relative z-50 flex max-h-72 -translate-y-6 flex-col overflow-auto overscroll-contain rounded-md border-1 border-zinc-300 bg-zinc-50 opacity-0 duration-200 data-[enter]:translate-y-0 data-[enter]:opacity-100 dark:border-zinc-700 dark:bg-zinc-900"
+          className="relative z-50 flex max-h-72 -translate-y-6 flex-col overflow-auto overscroll-contain rounded-md border border-zinc-300 bg-zinc-50 opacity-0 duration-200 data-[enter]:translate-y-0 data-[enter]:opacity-100 dark:border-zinc-700 dark:bg-zinc-900"
         >
           <div className="sticky top-0 z-40 mb-2 w-full bg-zinc-50 p-2 dark:bg-zinc-900">
             <Ariakit.Combobox
               store={combobox}
               autoSelect
               placeholder="Search..."
-              className="h-10 w-full rounded-md border-1 border-zinc-300 p-4 dark:border-zinc-700"
+              className="h-10 w-full rounded-md border border-zinc-300 p-4 dark:border-zinc-700"
             />
           </div>
           <Ariakit.ComboboxList store={combobox}>

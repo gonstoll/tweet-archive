@@ -9,9 +9,6 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
-      borderWidth: {
-        1: '1px',
-      },
       gridTemplateColumns: {
         'tweet-md': 'repeat(2, minmax(250px, 550px))',
         'tweet-xl': 'repeat(3, minmax(250px, 550px))',

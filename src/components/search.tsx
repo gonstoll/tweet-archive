@@ -35,7 +35,7 @@ export function Search() {
           id="search"
           name="search"
           placeholder="Search tweets by description"
-          className="h-11 w-full flex-1 appearance-none rounded-md border-1 border-zinc-300 bg-zinc-50 p-2 text-zinc-900 placeholder-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          className="h-11 w-full flex-1 appearance-none rounded-md border border-zinc-300 bg-zinc-50 p-2 text-zinc-900 placeholder-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
           onChange={e => handleSearch(e.currentTarget.value)}
           defaultValue={params.get('search') ?? ''}
         />
