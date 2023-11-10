@@ -19,5 +19,5 @@ attempt to solve this pain point.
 - [x] Pagination
 - [x] Disallow duplicated tweets
 - [x] Edit tweet entry
-- [ ] Dark theme
+- [x] Dark theme
 - [ ] Sort tweets by date
