@@ -156,7 +156,7 @@ export function TagsFilterComponent({
           className="mt-1 flex h-11 w-full items-center justify-between gap-1 whitespace-nowrap rounded-md border-1 border-zinc-300 p-2 dark:border-zinc-700"
         >
           {renderTag(selectedTags)}
-          <Ariakit.SelectArrow />
+          <Ariakit.SelectArrow className="text-zinc-900 dark:text-zinc-100" />
         </Ariakit.Select>
         {isPending ? (
           <div
@@ -194,7 +194,6 @@ export function TagsFilterComponent({
                       <TagComponent tag={value} />
                     </Ariakit.SelectItem>
                     <button
-                      // TODO: Pick up here
                       className="rounded-md border border-red-500 bg-zinc-50 px-3 py-1 text-xs text-red-700 hover:group-hover:bg-red-50 dark:border-red-500 dark:bg-zinc-900 dark:text-red-500 dark:hover:group-hover:bg-red-950"
                       onClick={() => handleOnDeleteTag(value.id)}
                     >
