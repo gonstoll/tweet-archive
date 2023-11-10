@@ -26,14 +26,16 @@ export function Search() {
 
   return (
     <div className="block w-full">
-      <label htmlFor="search">Search</label>
+      <label htmlFor="search" className="text-zinc-900 dark:text-zinc-100">
+        Search
+      </label>
       <div className="relative mt-1 flex">
         <input
           type="search"
-          placeholder="Search tweets by description"
-          className="h-11 w-full flex-1 appearance-none rounded-md border-1 border-slate-200 bg-white p-2"
-          name="search"
           id="search"
+          name="search"
+          placeholder="Search tweets by description"
+          className="h-11 w-full flex-1 appearance-none rounded-md border-1 border-zinc-300 bg-zinc-50 p-2 text-zinc-900 placeholder-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
           onChange={e => handleSearch(e.currentTarget.value)}
           defaultValue={params.get('search') ?? ''}
         />

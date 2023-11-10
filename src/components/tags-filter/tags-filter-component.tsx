@@ -18,7 +18,7 @@ type Props = {
 
 function renderTag(tags: Array<Omit<Tag, 'userId'>>) {
   if (!tags.length) {
-    return <p className="text-gray-400">Select tags</p>
+    return <p className="text-zinc-400">Select tags</p>
   }
 
   return (
