@@ -110,7 +110,7 @@ function TweetContent({tweet}: {tweet: EnrichedTweet}) {
   const tweetDate = new Date(tweet.created_at)
 
   return (
-    <div className="relative rounded-xl border bg-white p-8 shadow-md">
+    <div className="relative rounded-xl border border-zinc-200 bg-zinc-50 p-8 shadow-md dark:border-zinc-800 dark:bg-zinc-950">
       <a
         href={`https://x.com/${tweet.user.screen_name}`}
         target="_blank"
@@ -129,10 +129,10 @@ function TweetContent({tweet}: {tweet: EnrichedTweet}) {
           }}
         />
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-black group-hover:hover:underline">
+          <p className="text-sm font-semibold uppercase tracking-wide text-zinc-900 group-hover:hover:underline dark:text-zinc-100">
             {tweet.user.name}
           </p>
-          <p className="text-gray-400 group-hover:hover:underline">
+          <p className="text-zinc-400 group-hover:hover:underline dark:text-zinc-500">
             @{tweet.user.screen_name}
           </p>
         </div>
@@ -150,7 +150,7 @@ function TweetContent({tweet}: {tweet: EnrichedTweet}) {
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sky-500"
+                className="text-sky-500 dark:text-sky-600"
               >
                 {item.text}
               </a>
@@ -165,7 +165,7 @@ function TweetContent({tweet}: {tweet: EnrichedTweet}) {
             return (
               <span
                 key={i}
-                className="mt-4 whitespace-pre-wrap text-gray-600"
+                className="mt-4 whitespace-pre-wrap text-zinc-600 dark:text-zinc-300"
                 dangerouslySetInnerHTML={{__html: item.text}}
               />
             )
@@ -186,13 +186,13 @@ function TweetContent({tweet}: {tweet: EnrichedTweet}) {
           )}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 block rounded-md border bg-gray-50 p-4 text-sm shadow-md hover:bg-gray-100"
+          className="mt-2 block rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm shadow-md hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950 dark:shadow-zinc-900 dark:hover:bg-zinc-900"
         >
           <QuotedTweet {...tweet.quoted_tweet} />
         </a>
       ) : null}
 
-      <div className="mb-2 mt-4 border-b pb-2 text-sm text-gray-400">
+      <div className="mb-2 mt-4 border-b pb-2 text-sm text-zinc-400 dark:text-zinc-500">
         {tweetDate.toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'long',
@@ -206,7 +206,7 @@ function TweetContent({tweet}: {tweet: EnrichedTweet}) {
         <div className="flex gap-2">
           <div className="flex items-center">
             <svg
-              className="h-6 w-6 text-red-500"
+              className="h-6 w-6 text-red-500 dark:text-red-600"
               fill="none"
               height="24"
               stroke="currentColor"
@@ -219,11 +219,13 @@ function TweetContent({tweet}: {tweet: EnrichedTweet}) {
             >
               <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
             </svg>
-            <span className="ml-1 text-red-500">{tweet.favorite_count}</span>
+            <span className="ml-1 text-red-500 dark:text-red-600">
+              {tweet.favorite_count}
+            </span>
           </div>
           <div className="flex items-center">
             <svg
-              className="h-6 w-6 text-green-500"
+              className="h-6 w-6 text-green-500 dark:text-green-600"
               fill="none"
               height="24"
               stroke="currentColor"
@@ -236,7 +238,7 @@ function TweetContent({tweet}: {tweet: EnrichedTweet}) {
             >
               <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" />
             </svg>
-            <span className="ml-1 text-green-500">
+            <span className="ml-1 text-green-500 dark:text-green-600">
               {tweet.conversation_count}
             </span>
           </div>
@@ -247,7 +249,7 @@ function TweetContent({tweet}: {tweet: EnrichedTweet}) {
         href={getTweetUrl(tweet.user.screen_name, tweet.id_str)}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+        className="flex justify-center rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-950"
       >
         Go to tweet
       </a>
