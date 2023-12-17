@@ -139,6 +139,7 @@ export async function getTweets({
         },
       },
     },
+    orderBy: ({createdAt}, {desc}) => desc(createdAt),
     where: (tweets, {eq, and}) => {
       return and(
         inArray(tweets.id, filteredTweetsIds),
