@@ -36,9 +36,8 @@ export async function getTweetsCount({
     .filter(Boolean)
 
   const filteredTweetsQuery = await db.query.tweet.findMany({
-    columns: {
-      id: true,
-    },
+    columns: {id: true},
+    orderBy: ({createdAt}, {desc}) => desc(createdAt),
     where: (tweets, {and, sql, eq}) => {
       return and(
         transformedTags.length
@@ -92,9 +91,8 @@ export async function getTweets({
   const filteredTweetsQuery = await db.query.tweet.findMany({
     limit: tweetsPerPage,
     offset: (Number(page) - 1) * tweetsPerPage,
-    columns: {
-      id: true,
-    },
+    columns: {id: true},
+    orderBy: ({createdAt}, {desc}) => desc(createdAt),
     where: (tweets, {and, sql, eq}) => {
       return and(
         transformedTags.length
@@ -134,9 +132,7 @@ export async function getTweets({
   const filteredTweetsWithTags = await db.query.tweet.findMany({
     with: {
       tweetsToTags: {
-        with: {
-          tag: true,
-        },
+        with: {tag: true},
       },
     },
     orderBy: ({createdAt}, {desc}) => desc(createdAt),
