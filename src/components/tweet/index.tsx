@@ -7,7 +7,7 @@ async function getTweetData(tweetId: string) {
   const res = await fetch(`https://react-tweet.vercel.app/api/tweet/${tweetId}`)
 
   if (res.statusText !== 'OK') {
-    throw new Error('Failed to fetch tweet data')
+    return // Tweet was deleted
   }
 
   return res.json() as Promise<{data: Tweet}>
@@ -20,6 +20,10 @@ export async function Tweet({tweet}: {tweet: UserTweet}) {
     'use server'
     await deleteTweet(tweetId)
     revalidatePath('/')
+  }
+
+  if (!tweetData) {
+    return null
   }
 
   return (
