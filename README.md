@@ -20,4 +20,4 @@ attempt to solve this pain point.
 - [x] Disallow duplicated tweets
 - [x] Edit tweet entry
 - [x] Dark theme
-- [ ] Sort tweets by date
+- [x] Sort tweets by date
