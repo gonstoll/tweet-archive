@@ -1,23 +1,33 @@
 # Tweet Archive
 
-The motivation behind this project is to have a place to store tweets that I find interesting. I have a tendency to
-retweet tweets that I find interesting, but obviously there's not a good way to search through them. This project is an
-attempt to solve this pain point.
+Do you ever find yourself in Twitter (excuse me, X) scrolling through your bookmarks/retweets/likes and not being able
+to find the tweet you're looking for?
 
-## Todo list
+Then this app is for you :)
 
-- [x] Store tweets in a database with:
-  - [x] ID
-  - [x] Date
-  - [x] Description (optional)
-- [x] Search through tweets by description text
-- [x] Filter tweets by tags
-- [x] Auth
-- [x] Add a tweet through the UI
-- [x] Delete tags
-- [x] Delete tweets
-- [x] Pagination
-- [x] Disallow duplicated tweets
-- [x] Edit tweet entry
-- [x] Dark theme
-- [x] Sort tweets by date
+Tweet Archive is an app where you can store relevant tweets for later reference. You can tag them, search through them
+and edit them at any point in time, at your leisure.
+
+<img src="__images/screenshot1.png" alt="Tweet archive screeenshot" />
+<img src="__images/screenshot2.png" alt="Tweet archive screeenshot with tags applied" />
+<img src="__images/screenshot3.png" alt="Tweet archive screeenshot with tags and search applied" />
+
+## Features
+
+- Add tweets to your archive
+- Tag tweets
+- Search through your archive
+- Edit tweets
+- Delete tweets
+
+## Tech Stack and infrastructure
+
+- Next.js
+- Tailwind CSS
+- Drizzle
+- Zod
+- Planetscale
+- Vercel
+- Clerk
+
+## How to run the app
