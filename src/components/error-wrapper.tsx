@@ -6,7 +6,7 @@ export function ErrorWrapper({
   message: string
 }) {
   return (
-    <div className="grid h-full place-content-center">
+    <div className="grid h-full place-content-center px-4">
       <div className="text-center">
         <svg
           xmlns="http://www.w3.org/2000/svg"
