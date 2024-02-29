@@ -82,3 +82,5 @@ export async function seedTweetsToTags() {
 export async function seedAll() {
   await Promise.all([seedTweets(), seedTags(), seedTweetsToTags()])
 }
+
+seedAll()
