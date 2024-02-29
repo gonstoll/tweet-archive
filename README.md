@@ -54,7 +54,7 @@ bun run db:migrate && bun run db:push
 If you wanna have some data off the bat, you can run the seed command:
 
 ```bash
-npx ts-node ./src/db/schema.ts
+npx ts-node ./src/db/seed.ts
 ```
 
 Then you can run the app:
