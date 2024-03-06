@@ -1,10 +1,5 @@
 # Tweet Archive
 
-Do you ever find yourself in Twitter (excuse me, X) scrolling through your bookmarks/retweets/likes and not being able
-to find the tweet you're looking for?
-
-Then this app is for you :)
-
 Tweet Archive is an app where you can store relevant tweets for later reference. You can tag them, search through them
 and edit them at any point in time, at your leisure.
 
