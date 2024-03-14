@@ -1,10 +1,17 @@
 import {auth} from '@clerk/nextjs'
-import {and, eq, exists, inArray, like, type InferModel} from 'drizzle-orm'
+import {
+  and,
+  eq,
+  exists,
+  inArray,
+  like,
+  type InferSelectModel,
+} from 'drizzle-orm'
 import {db, ratelimit} from '../db'
 import * as schema from '../schema'
 import type {Tag} from './tag'
 
-export type Tweet = InferModel<typeof schema.tweet>
+export type Tweet = InferSelectModel<typeof schema.tweet>
 export type UserTweet = Tweet & {tags?: Array<Tag>; tweetId: string}
 export type NewTweet = Omit<Tweet, 'id' | 'userId'> & {tagIds?: string}
 export type UpdatedTweet = Omit<Tweet, 'id' | 'userId' | 'createdAt'> & {
@@ -40,9 +47,6 @@ export async function getTweetsCount({
     orderBy: ({createdAt}, {desc}) => desc(createdAt),
     where: (tweets, {and, sql, eq}) => {
       return and(
-        transformedTags.length
-          ? sql`json_length(${tweets.tweetsToTags}) > 0`
-          : undefined,
         like(tweets.description, `%${search}%`),
         eq(tweets.userId, userId),
       )
@@ -68,7 +72,7 @@ export async function getTweetsCount({
     },
   })
 
-  return filteredTweetsQuery.length
+  return filteredTweetsQuery.filter(t => Boolean(t.tweetsToTags.length)).length
 }
 
 export async function getTweets({
@@ -93,11 +97,8 @@ export async function getTweets({
     offset: (Number(page) - 1) * tweetsPerPage,
     columns: {id: true},
     orderBy: ({createdAt}, {desc}) => desc(createdAt),
-    where: (tweets, {and, sql, eq}) => {
+    where: (tweets, {and, eq}) => {
       return and(
-        transformedTags.length
-          ? sql`json_length(${tweets.tweetsToTags}) > 0`
-          : undefined,
         like(tweets.description, `%${search}%`),
         eq(tweets.userId, userId),
       )
@@ -109,11 +110,11 @@ export async function getTweets({
             db
               .select()
               .from(schema.tag)
-              .where(() => {
+              .where(tag => {
                 if (transformedTags.length) {
                   return and(
-                    inArray(schema.tag.name, transformedTags),
-                    eq(tweetsToTags.tagId, schema.tag.id),
+                    inArray(tag.name, transformedTags),
+                    eq(tweetsToTags.tagId, tag.id),
                   )
                 }
               }),
@@ -123,7 +124,9 @@ export async function getTweets({
     },
   })
 
-  const filteredTweetsIds = filteredTweetsQuery.map(t => t.id)
+  const filteredTweetsIds = filteredTweetsQuery
+    .filter(t => Boolean(t.tweetsToTags.length))
+    .map(t => t.id)
 
   if (!filteredTweetsIds.length) {
     return []
@@ -235,7 +238,7 @@ export async function createTweet({tagIds, ...tweet}: NewTweet) {
     if (tagsArray?.length) {
       await db.insert(schema.tweetsToTags).values(
         tagsArray.map(id => ({
-          tweetId: Number(newTweet.insertId),
+          tweetId: Number(newTweet.lastInsertRowid),
           tagId: Number(id),
         })),
       )

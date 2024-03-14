@@ -7,7 +7,14 @@ const nextConfig = {
     ],
   },
   experimental: {
-    serverComponentsExternalPackages: ['mysql2'],
+    serverComponentsExternalPackages: [
+      'mysql2',
+      'sqlite3',
+      'libsql',
+      'encoding',
+      'bufferutil',
+      'utf-8-validate',
+    ],
     serverActions: true,
   },
 }

@@ -1,17 +1,16 @@
-import {connect} from '@planetscale/database'
+import {createClient} from '@libsql/client'
 import {Ratelimit} from '@upstash/ratelimit'
 import {Redis} from '@upstash/redis'
-import {drizzle} from 'drizzle-orm/planetscale-serverless'
+import {drizzle} from 'drizzle-orm/libsql'
 import {ENV} from '~/env'
 import * as schema from './schema'
 
-const connection = connect({
-  host: ENV.DATABASE_HOST,
-  username: ENV.DATABASE_USERNAME,
-  password: ENV.DATABASE_PASSWORD,
+const connection = createClient({
+  url: ENV.TURSO_DATABASE_URL,
+  authToken: ENV.TURSO_DATABASE_AUTH_TOKEN,
 })
 
-export const db = drizzle(connection, {schema})
+export const db = drizzle(connection, {schema, logger: true})
 
 export const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
