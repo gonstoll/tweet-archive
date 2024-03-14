@@ -6,10 +6,6 @@ const nextConfig = {
       {protocol: 'https', hostname: 'abs.twimg.com'},
     ],
   },
-  experimental: {
-    serverComponentsExternalPackages: ['mysql2'],
-    serverActions: true,
-  },
 }
 
-module.exports = nextConfig
+export default nextConfig

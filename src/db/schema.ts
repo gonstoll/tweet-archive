@@ -1,14 +1,5 @@
 import {relations} from 'drizzle-orm'
-import {
-  date,
-  int,
-  mysqlEnum,
-  mysqlTable,
-  primaryKey,
-  serial,
-  text,
-  varchar,
-} from 'drizzle-orm/mysql-core'
+import {integer, sqliteTable, text} from 'drizzle-orm/sqlite-core'
 
 export const tagColors = [
   'red',
@@ -21,39 +12,41 @@ export const tagColors = [
   'pink',
 ] as const
 
-export const tweet = mysqlTable('tweet', {
-  id: serial('id').primaryKey().notNull(),
+export const tweet = sqliteTable('tweet', {
+  id: integer('id', {mode: 'number'})
+    .primaryKey({autoIncrement: true})
+    .notNull(),
   description: text('description'),
-  url: varchar('url', {length: 2083}).notNull(),
-  createdAt: date('created_at').notNull(),
-  userId: varchar('user_id', {length: 100}).notNull(),
+  url: text('url', {length: 2083}).notNull(),
+  createdAt: integer('created_at', {mode: 'timestamp'}).notNull(),
+  userId: text('user_id', {length: 100}).notNull(),
 })
 
 export const tweetRelations = relations(tweet, ({many}) => ({
   tweetsToTags: many(tweetsToTags),
 }))
 
-export const tag = mysqlTable('tag', {
-  id: serial('id').primaryKey().notNull(),
-  name: varchar('name', {length: 255}).notNull(),
-  color: mysqlEnum('color', tagColors).notNull(),
-  userId: varchar('user_id', {length: 100}).notNull(),
+export const tag = sqliteTable('tag', {
+  id: integer('id', {mode: 'number'})
+    .primaryKey({autoIncrement: true})
+    .notNull(),
+  name: text('name', {length: 255}).notNull(),
+  color: text('color', {enum: tagColors}).notNull(),
+  userId: text('user_id', {length: 100}).notNull(),
 })
 
 export const tagsRelations = relations(tag, ({many}) => ({
   tweetsToTags: many(tweetsToTags),
 }))
 
-export const tweetsToTags = mysqlTable(
-  'tweet_tag',
-  {
-    tweetId: int('tweet_id').notNull(),
-    tagId: int('tag_id').notNull(),
-  },
-  table => ({
-    primaryKey: primaryKey(table.tweetId, table.tagId),
-  })
-)
+export const tweetsToTags = sqliteTable('tweet_tag', {
+  tweetId: integer('tweet_id', {mode: 'number'})
+    .notNull()
+    .references(() => tweet.id),
+  tagId: integer('tag_id', {mode: 'number'})
+    .notNull()
+    .references(() => tag.id),
+})
 
 export const tweetWithTagsRelations = relations(tweetsToTags, ({one}) => ({
   tweet: one(tweet, {

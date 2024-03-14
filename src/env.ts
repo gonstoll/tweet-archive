@@ -4,15 +4,13 @@ const envVariables = z.object({
   // Environment
   NODE_ENV: z.enum(['development', 'production', 'test']),
 
-  // Drizzle
-  DATABASE_HOST: z.string(),
-  DATABASE_USERNAME: z.string(),
-  DATABASE_PASSWORD: z.string(),
-  DATABASE_URL: z.string(),
+  // Turso
+  TURSO_DATABASE_URL: z.string(),
+  TURSO_DATABASE_AUTH_TOKEN: z.string().optional(), // Optional for local development
 
   // Clerk
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
   CLERK_SECRET_KEY: z.string(),
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
   NEXT_PUBLIC_CLERK_SIGN_IN_URL: z.string(),
   NEXT_PUBLIC_CLERK_SIGN_UP_URL: z.string(),
   NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: z.string(),
