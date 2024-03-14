@@ -1,4 +1,3 @@
-import {auth} from '@clerk/nextjs'
 import {
   and,
   eq,
@@ -7,8 +6,9 @@ import {
   like,
   type InferSelectModel,
 } from 'drizzle-orm'
-import {db, ratelimit} from '../db'
+import {db} from '../db'
 import * as schema from '../schema'
+import {checkAuth} from '../utils'
 import type {Tag} from './tag'
 
 export type Tweet = InferSelectModel<typeof schema.tweet>
@@ -31,11 +31,7 @@ export async function getTweetsCount({
   tags,
   search,
 }: Omit<GetTweetsOpts, 'page' | 'tweetsPerPage'>) {
-  const {userId} = auth()
-
-  if (!userId) {
-    throw new Error('You must login to see this content')
-  }
+  const {userId} = await checkAuth()
 
   const transformedTags = tags
     .split(',')
@@ -81,11 +77,7 @@ export async function getTweets({
   page,
   tweetsPerPage,
 }: GetTweetsOpts) {
-  const {userId} = auth()
-
-  if (!userId) {
-    throw new Error('You must login to see this content')
-  }
+  const {userId} = await checkAuth()
 
   const transformedTags = tags
     .split(',')
@@ -207,18 +199,7 @@ async function isTweetDuplicated(tweetId: string) {
 }
 
 export async function createTweet({tagIds, ...tweet}: NewTweet) {
-  const user = auth()
-
-  if (!user.userId) {
-    throw new Error('You must login to see this content')
-  }
-
-  const {success} = await ratelimit.limit(user.userId)
-
-  if (!success) {
-    throw new Error('Rate limit exceeded')
-  }
-
+  const user = await checkAuth(true)
   const existingTweet = await isTweetDuplicated(getTweetId(tweet.url))
 
   if (existingTweet) {
@@ -250,18 +231,7 @@ export async function createTweet({tagIds, ...tweet}: NewTweet) {
 }
 
 export async function deleteTweet(tweetId: number) {
-  const user = auth()
-
-  if (!user.userId) {
-    throw new Error('User not logged in')
-  }
-
-  const {success} = await ratelimit.limit(user.userId)
-
-  if (!success) {
-    throw new Error('Rate limit exceeded')
-  }
-
+  await checkAuth(true)
   try {
     await db.delete(schema.tweet).where(eq(schema.tweet.id, tweetId))
     await db
@@ -274,18 +244,7 @@ export async function deleteTweet(tweetId: number) {
 }
 
 export async function editTweet(tweet: UpdatedTweet & {id: string}) {
-  const user = auth()
-
-  if (!user.userId) {
-    throw new Error('User not logged in')
-  }
-
-  const {success} = await ratelimit.limit(user.userId)
-
-  if (!success) {
-    throw new Error('Rate limit exceeded')
-  }
-
+  await checkAuth(true)
   const {tagIds, id, ...restTweet} = tweet
 
   try {

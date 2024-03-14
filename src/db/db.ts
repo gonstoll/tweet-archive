@@ -10,7 +10,7 @@ const connection = createClient({
   authToken: ENV.TURSO_DATABASE_AUTH_TOKEN,
 })
 
-export const db = drizzle(connection, {schema, logger: true})
+export const db = drizzle(connection, {schema})
 
 export const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
