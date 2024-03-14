@@ -7,6 +7,7 @@ import type {Tag} from '~/db/models/tag'
 import {tagColors} from '~/db/schema'
 import {searchParamsToString} from '~/utils/search-params-to-string'
 import {Tag as TagComponent} from '../tag'
+import {Spinner} from '../spinner'
 
 type Props = {
   tags: Array<Tag>
@@ -158,12 +159,7 @@ export function TagsFilterComponent({
           {renderTag(selectedTags)}
           <Ariakit.SelectArrow className="text-zinc-900 dark:text-zinc-100" />
         </Ariakit.Select>
-        {isPending ? (
-          <div
-            className="absolute right-7 top-2 inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"
-            role="status"
-          />
-        ) : null}
+        {isPending ? <Spinner /> : null}
       </div>
       {mounted ? (
         <Ariakit.SelectPopover
@@ -187,7 +183,7 @@ export function TagsFilterComponent({
                 key={value.id}
                 focusOnHover
                 className="relative mr-2 flex flex-1 cursor-pointer items-center gap-2 p-2"
-                render={p => (
+                render={({ref, ...p}) => (
                   <div className="group flex items-center justify-between pr-2 hover:bg-zinc-100 dark:hover:bg-zinc-800">
                     <Ariakit.SelectItem {...p} value={value.name}>
                       <Ariakit.SelectItemCheck />

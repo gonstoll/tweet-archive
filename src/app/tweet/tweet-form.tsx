@@ -2,6 +2,7 @@ import Link from 'next/link'
 import {z} from 'zod'
 import {TagsFilter} from '~/components/tags-filter'
 import type {NewTweet, UpdatedTweet, UserTweet} from '~/db/models/tweet'
+import {SubmitButton} from './submit-button'
 
 export const newTweetSchema = z.object({
   url: z.string(),
@@ -87,12 +88,7 @@ export function TweetForm(props: Props) {
         >
           Cancel
         </Link>
-        <button
-          type="submit"
-          className="rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-zinc-900"
-        >
-          {props.type === 'create' ? 'Add tweet' : 'Save changes'}
-        </button>
+        <SubmitButton type={props.type} />
       </div>
     </form>
   )
