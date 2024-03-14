@@ -45,7 +45,7 @@ export async function getTweetsCount({
   const filteredTweetsQuery = await db.query.tweet.findMany({
     columns: {id: true},
     orderBy: ({createdAt}, {desc}) => desc(createdAt),
-    where: (tweets, {and, sql, eq}) => {
+    where: (tweets, {and, eq}) => {
       return and(
         like(tweets.description, `%${search}%`),
         eq(tweets.userId, userId),
