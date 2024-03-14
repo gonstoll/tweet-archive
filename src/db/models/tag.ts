@@ -1,54 +1,27 @@
 'use server'
 import {auth} from '@clerk/nextjs'
-import {eq, type InferModel} from 'drizzle-orm'
+import {eq, type InferSelectModel} from 'drizzle-orm'
 import {db, ratelimit} from '../db'
 import * as schema from '../schema'
+import {checkAuth} from '../utils'
 
-export type Tag = InferModel<typeof schema.tag>
+export type Tag = InferSelectModel<typeof schema.tag>
 
 export async function getTags() {
-  const {userId} = auth()
-
-  if (!userId) {
-    throw new Error('You must login to see this content')
-  }
-
+  const {userId} = await checkAuth()
   const tags = await db.query.tag.findMany({
     where: (tags, {eq}) => eq(tags.userId, userId),
   })
-
   return tags
 }
 
 export async function createTag(tag: Omit<Tag, 'userId' | 'id'>) {
-  const user = auth()
-
-  if (!user.userId) {
-    throw new Error('You must login to see this content')
-  }
-
-  const {success} = await ratelimit.limit(user.userId)
-
-  if (!success) {
-    throw new Error('Rate limit exceeded')
-  }
-
-  await db.insert(schema.tag).values({...tag, userId: user.userId})
+  const {userId} = await checkAuth(true)
+  await db.insert(schema.tag).values({...tag, userId: userId})
 }
 
 export async function deleteTag(tagId: number) {
-  const user = auth()
-
-  if (!user.userId) {
-    throw new Error('You must login to see this content')
-  }
-
-  const {success} = await ratelimit.limit(user.userId)
-
-  if (!success) {
-    throw new Error('Rate limit exceeded')
-  }
-
+  await checkAuth()
   await db.delete(schema.tag).where(eq(schema.tag.id, tagId))
   await db
     .delete(schema.tweetsToTags)

@@ -6,8 +6,8 @@ import * as React from 'react'
 import type {Tag} from '~/db/models/tag'
 import {tagColors} from '~/db/schema'
 import {searchParamsToString} from '~/utils/search-params-to-string'
-import {Tag as TagComponent} from '../tag'
 import {Spinner} from '../spinner'
+import {Tag as TagComponent} from '../tag'
 
 type Props = {
   tags: Array<Tag>

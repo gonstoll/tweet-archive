@@ -2,12 +2,12 @@
 import {usePathname, useRouter, useSearchParams} from 'next/navigation'
 import * as React from 'react'
 import {searchParamsToString} from '~/utils/search-params-to-string'
+import {Spinner} from './spinner'
 
 export function Search() {
   const router = useRouter()
   const pathname = usePathname()
   const params = useSearchParams()
-
   const [isPending, startTransition] = React.useTransition()
 
   function handleSearch(term: string) {
@@ -39,12 +39,7 @@ export function Search() {
           onChange={e => handleSearch(e.currentTarget.value)}
           defaultValue={params.get('search') ?? ''}
         />
-        {isPending ? (
-          <div
-            className="absolute right-7 top-2 inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"
-            role="status"
-          />
-        ) : null}
+        {isPending ? <Spinner /> : null}
       </div>
     </div>
   )

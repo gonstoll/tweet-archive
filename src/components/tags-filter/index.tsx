@@ -1,4 +1,4 @@
-import {type Tag, createTag, deleteTag, getTags} from '~/db/models/tag'
+import {createTag, deleteTag, getTags, type Tag} from '~/db/models/tag'
 import {TagsFilterComponent} from './tags-filter-component'
 
 export async function TagsFilter({
