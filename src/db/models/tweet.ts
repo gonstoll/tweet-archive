@@ -116,9 +116,13 @@ export async function getTweets({
     },
   })
 
-  const filteredTweetsIds = filteredTweetsQuery
-    .filter(t => Boolean(t.tweetsToTags.length))
-    .map(t => t.id)
+  let filteredTweetsIds = filteredTweetsQuery.map(t => t.id)
+
+  if (transformedTags.length) {
+    filteredTweetsIds = filteredTweetsQuery
+      .filter(t => Boolean(t.tweetsToTags.length))
+      .map(t => t.id)
+  }
 
   if (!filteredTweetsIds.length) {
     return []
@@ -210,6 +214,7 @@ export async function createTweet({tagIds, ...tweet}: NewTweet) {
     const newTweet = await db
       .insert(schema.tweet)
       .values({...tweet, userId: user.userId})
+      .returning({id: schema.tweet.id})
 
     const tagsArray = tagIds
       ?.split(',')
@@ -219,7 +224,7 @@ export async function createTweet({tagIds, ...tweet}: NewTweet) {
     if (tagsArray?.length) {
       await db.insert(schema.tweetsToTags).values(
         tagsArray.map(id => ({
-          tweetId: Number(newTweet.lastInsertRowid),
+          tweetId: Number(newTweet[0].id),
           tagId: Number(id),
         })),
       )
