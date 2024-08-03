@@ -1,12 +1,7 @@
-/** @type {import('tailwindcss').Config} */
+import type {Config} from 'tailwindcss'
 
-module.exports = {
-  content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
-  darkMode: 'class',
+export default {
+  content: ['./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
       gridTemplateColumns: {
@@ -19,4 +14,4 @@ module.exports = {
     },
   },
   plugins: [],
-}
+} satisfies Config
