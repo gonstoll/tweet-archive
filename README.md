@@ -44,8 +44,21 @@ dependencies:
 bun install
 ```
 
+Next thing, you'll need to run the db migrations and push the schema to
+Turso:
+
+```bash
+bun db:generate && bun db:migrate && bun db:push
+```
+
+If you want to have some data right off the bat, you can run the seed command:
+
+```bash
+bun db:seed
+```
+
 Then you can run the app:
 
 ```bash
-bun run dev
+bun dev
 ```

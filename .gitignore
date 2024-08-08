@@ -8,3 +8,10 @@ node_modules
 .env*
 .env*.local
 !.env.example
+
+# sqlite db tables
+*.db*
+
+# drizzle migrations
+/drizzle/migrations/meta
+!/drizzle/migrations/*.sql

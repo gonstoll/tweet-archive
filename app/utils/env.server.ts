@@ -6,6 +6,11 @@ const envVariables = z.object({
   // Auth
   CLERK_SECRET_KEY: z.string().trim().min(1),
   CLERK_PUBLISHABLE_KEY: z.string().trim().min(1),
+
+  // Database
+  TURSO_DATABASE_URL: z.string().url(),
+  TURSO_DATABASE_AUTH_TOKEN: z.string().optional(),
+  CLERK_USER_ID: z.string().optional(), // For development purposes only
 })
 
 declare global {
