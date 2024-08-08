@@ -1,5 +1,14 @@
-import {db} from '.'
+import {createClient} from '@libsql/client'
+import {drizzle} from 'drizzle-orm/libsql'
+import * as schema from './schema'
 import {tag, tweet, tweetsToTags} from './schema'
+
+const client = createClient({
+  url: process.env.TURSO_DATABASE_URL,
+  authToken: process.env.TURSO_DATABASE_AUTH_TOKEN,
+})
+
+const db = drizzle(client, {schema})
 
 const userId = process.env.CLERK_USER_ID ?? 'fulanito'
 
@@ -403,7 +412,7 @@ const tweetsToTagsData = [
   {tweetId: 98, tagId: 73},
   {tweetId: 99, tagId: 3},
   {tweetId: 99, tagId: 79},
-  {tweetId: 100, tagId: 3},
+  // {tweetId: 100, tagId: 3}, // Oops! Tweet with id 100 does not have a tag assigned!
 ]
 
 async function dbTeardown() {
@@ -440,3 +449,10 @@ async function seed() {
 }
 
 seed()
+  .catch(error => {
+    console.error(error)
+    process.exit(1)
+  })
+  .finally(() => {
+    client.close()
+  })

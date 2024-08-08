@@ -14,12 +14,20 @@ const badgeVariants = cva(
         destructive:
           'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
         outline: 'text-foreground',
+        blue: 'bg-blue-100 dark:bg-blue-800',
+        red: 'bg-red-100 dark:bg-red-800',
+        green: 'bg-green-100 dark:bg-green-800',
+        yellow: 'bg-yellow-100 dark:bg-yellow-700',
+        gray: 'bg-gray-200 dark:bg-gray-800',
+        orange: 'bg-orange-200 dark:bg-orange-700',
+        purple: 'bg-purple-200 dark:bg-purple-800',
+        pink: 'bg-pink-200 dark:bg-pink-800',
       },
     },
     defaultVariants: {
       variant: 'default',
     },
-  }
+  },
 )
 
 export interface BadgeProps

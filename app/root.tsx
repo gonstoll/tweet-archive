@@ -1,4 +1,4 @@
-import {ClerkApp} from '@clerk/remix'
+import {ClerkApp, SignedIn, SignedOut} from '@clerk/remix'
 import {rootAuthLoader} from '@clerk/remix/ssr.server'
 import type {LoaderFunctionArgs, MetaFunction} from '@remix-run/node'
 import {
@@ -15,8 +15,11 @@ import {getEnv} from './utils/env.server'
 
 export function meta(): ReturnType<MetaFunction> {
   return [
-    {title: 'New Remix App'},
-    {name: 'description', content: 'Welcome to Remix!'},
+    {title: 'Tweet Archive'},
+    {
+      name: 'description',
+      content: 'A curated archive of all your saved tweets.',
+    },
   ]
 }
 
@@ -26,7 +29,7 @@ export async function loader(args: LoaderFunctionArgs) {
   })
 }
 
-export function Layout({children}: {children: React.ReactNode}) {
+function App() {
   const data = useLoaderData<typeof loader>()
 
   return (
@@ -37,8 +40,25 @@ export function Layout({children}: {children: React.ReactNode}) {
         <Meta />
         <Links />
       </head>
-      <body className="flex min-h-full">
-        {children}
+      <body className="flex min-h-full flex-col p-8">
+        <SignedIn>
+          <header className="mx-auto mb-6 flex w-full max-w-7xl items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Tweet Archive</h1>
+              <h2 className="text-muted-foreground">
+                Here is a list of all your saved tweets
+              </h2>
+            </div>
+          </header>
+          <main className="mx-auto w-full max-w-7xl">
+            <Outlet />
+          </main>
+        </SignedIn>
+
+        <SignedOut>
+          <Outlet />
+        </SignedOut>
+
         <ScrollRestoration />
         <Scripts />
         <script
@@ -49,10 +69,6 @@ export function Layout({children}: {children: React.ReactNode}) {
       </body>
     </html>
   )
-}
-
-function App() {
-  return <Outlet />
 }
 
 export default ClerkApp(App)
