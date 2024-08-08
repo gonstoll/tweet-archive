@@ -1,8 +1,17 @@
 import {ClerkApp} from '@clerk/remix'
 import {rootAuthLoader} from '@clerk/remix/ssr.server'
 import type {LoaderFunctionArgs, MetaFunction} from '@remix-run/node'
-import {Links, Meta, Outlet, Scripts, ScrollRestoration} from '@remix-run/react'
+import {
+  json,
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  useLoaderData,
+} from '@remix-run/react'
 import './globals.css'
+import {getEnv} from './utils/env.server'
 
 export function meta(): ReturnType<MetaFunction> {
   return [
@@ -12,10 +21,14 @@ export function meta(): ReturnType<MetaFunction> {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  return rootAuthLoader(args)
+  return rootAuthLoader(args, () => {
+    return json({ENV: getEnv()})
+  })
 }
 
 export function Layout({children}: {children: React.ReactNode}) {
+  const data = useLoaderData<typeof loader>()
+
   return (
     <html lang="en" className="h-full">
       <head>
@@ -28,6 +41,11 @@ export function Layout({children}: {children: React.ReactNode}) {
         {children}
         <ScrollRestoration />
         <Scripts />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
+          }}
+        />
       </body>
     </html>
   )
