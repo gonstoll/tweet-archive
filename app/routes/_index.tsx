@@ -1,6 +1,12 @@
 import {getAuth} from '@clerk/remix/ssr.server'
 import {redirect, type LoaderFunctionArgs} from '@remix-run/node'
 import {Link, useLoaderData} from '@remix-run/react'
+import {
+  CirclePlus,
+  EllipsisVertical,
+  ListFilter,
+  SquareArrowOutUpRight,
+} from 'lucide-react'
 import type {MediaDetails, Tweet} from 'react-tweet/api'
 import {Badge} from '~/components/ui/badge'
 import {Button, buttonVariants} from '~/components/ui/button'
@@ -12,9 +18,20 @@ import {
   CardHeader,
   CardTitle,
 } from '~/components/ui/card'
-import {getTweets, getTweetUrl, type TweetMeta} from '~/db/models/tweets'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '~/components/ui/dropdown-menu'
+import {Input} from '~/components/ui/input'
+import {getTweets, type TweetMeta} from '~/db/models/tweets'
 import {classNames} from '~/utils/classnames'
 import {enrichTweet} from '~/utils/tweet'
+
+function getTweetUrl(handle: string, tweetId: string) {
+  return `https://x.com/${handle}/status/${tweetId}`
+}
 
 export async function loader(args: LoaderFunctionArgs) {
   const {userId} = await getAuth(args)
@@ -32,15 +49,36 @@ export default function Index() {
   const {tweets} = useLoaderData<typeof loader>()
 
   return (
-    <ul className="mx-auto w-full justify-center gap-8 md:columns-2 lg:columns-3">
-      {tweets.map(tweet => {
-        return (
-          <li key={tweet.meta.id} className="mb-8 break-inside-avoid">
-            <TweetCard tweetData={tweet.data} tweetMeta={tweet.meta} />
-          </li>
-        )
-      })}
-    </ul>
+    <section>
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Input
+            type="text"
+            placeholder="Filter tweets..."
+            className="flex h-8 w-[150px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 lg:w-[250px]"
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 border-dashed shadow-sm"
+          >
+            <ListFilter size={15} className="mr-2" /> Tags
+          </Button>
+        </div>
+        <Button variant="default" size="sm" className="h-8 shadow-sm">
+          <CirclePlus size={15} className="mr-2" /> Add tweet
+        </Button>
+      </div>
+      <ul className="mx-auto w-full justify-center gap-8 md:columns-2 lg:columns-3">
+        {tweets.map(tweet => {
+          return (
+            <li key={tweet.meta.id} className="mb-8 break-inside-avoid">
+              <TweetCard tweetData={tweet.data} tweetMeta={tweet.meta} />
+            </li>
+          )
+        })}
+      </ul>
+    </section>
   )
 }
 
@@ -63,25 +101,41 @@ function TweetCard({
 
   return (
     <Card className="overflow-hidden shadow">
-      <a href={getTweetUrl(tweetData.user.screen_name, tweetData.id_str)}>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <img
-              width="40"
-              height="40"
-              src={tweetData.user.profile_image_url_https}
-              alt={`${tweetData.user.screen_name}'s profile`}
-              className="aspect-square rounded-full object-cover"
-            />
-            <div className="flex flex-col">
-              <CardTitle className="mb-auto text-base">
-                {tweetData.user.name}
-              </CardTitle>
-              <CardDescription>@{tweetData.user.screen_name}</CardDescription>
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <a href={getTweetUrl(tweetData.user.screen_name, tweetData.id_str)}>
+            <div className="flex items-center gap-2">
+              <img
+                width="40"
+                height="40"
+                src={tweetData.user.profile_image_url_https}
+                alt={`${tweetData.user.screen_name}'s profile`}
+                className="aspect-square rounded-full object-cover"
+              />
+              <div className="flex flex-col">
+                <CardTitle className="mb-auto text-base">
+                  {tweetData.user.name}
+                </CardTitle>
+                <CardDescription>@{tweetData.user.screen_name}</CardDescription>
+              </div>
             </div>
-          </div>
-        </CardHeader>
-      </a>
+          </a>
+
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="ghost" className="w-9 px-0">
+                <EllipsisVertical size={24} className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="bottom" align="end">
+              <DropdownMenuItem asChild>
+                <Link to={`/tweet/${tweetMeta.id}`}>Edit</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>Delete</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </CardHeader>
 
       <CardContent>
         {enrichedTweet.entities.map((item, i) => {
@@ -156,11 +210,11 @@ function TweetCard({
         <Link
           to={getTweetUrl(tweetData.user.screen_name, tweetData.id_str)}
           className={classNames(
-            'mt-4 w-full',
-            buttonVariants({variant: 'secondary'}),
+            'mt-4 w-full border-dashed shadow-sm',
+            buttonVariants({variant: 'outline'}),
           )}
         >
-          Go to tweet
+          Go to tweet <SquareArrowOutUpRight size={15} className="ml-2" />
         </Link>
       </CardContent>
 
@@ -184,18 +238,6 @@ function TweetCard({
         <p className="text-sm text-secondary-foreground">
           {tweetMeta.description}
         </p>
-
-        <div className="mt-4 flex items-center gap-2">
-          <Link
-            to={`/tweet/${tweetMeta.id}`}
-            className={buttonVariants({variant: 'outline', size: 'sm'})}
-          >
-            Edit
-          </Link>
-          <Button size="sm" variant="default">
-            Delete
-          </Button>
-        </div>
       </CardFooter>
     </Card>
   )

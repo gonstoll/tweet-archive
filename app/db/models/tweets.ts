@@ -62,7 +62,3 @@ function getTweetId(tweetUrl: string) {
 
   return tweetId
 }
-
-export function getTweetUrl(handle: string, tweetId: string) {
-  return `https://x.com/${handle}/status/${tweetId}`
-}

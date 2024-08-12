@@ -40,7 +40,7 @@ function App() {
         <Meta />
         <Links />
       </head>
-      <body className="flex min-h-full flex-col p-8">
+      <body className="flex min-h-full flex-col bg-background p-8">
         <SignedIn>
           <header className="mx-auto mb-6 flex w-full max-w-7xl items-center justify-between">
             <div>
