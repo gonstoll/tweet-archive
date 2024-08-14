@@ -8,11 +8,20 @@ export type TweetMeta = InferSelectModel<typeof tweet> & {
   tags: Array<Omit<Tag, 'userId'>>
 }
 
-export async function getTweets(userId: string) {
+export async function getTweets(request: Request, userId: string) {
+  const url = new URL(request.url)
+  const search = url.searchParams.get('q') ?? ''
+  const tags = url.searchParams.getAll('tags') ?? []
+
   const dbTweets = await db.query.tweet.findMany({
     limit: 20,
     orderBy: ({createdAt}, {desc}) => desc(createdAt),
-    where: ({userId: dbUserId}, {eq}) => eq(dbUserId, userId),
+    where: (tweets, {and, eq, like}) => {
+      return and(
+        like(tweets.description, `%${search}%`),
+        eq(tweets.userId, userId),
+      )
+    },
     with: {
       tweetsToTags: {
         columns: {tagId: false, tweetId: false},
