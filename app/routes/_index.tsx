@@ -1,11 +1,13 @@
 import {getAuth} from '@clerk/remix/ssr.server'
 import {redirect, type LoaderFunctionArgs} from '@remix-run/node'
-import {Form, useLoaderData, useSearchParams, useSubmit} from '@remix-run/react'
-import {CirclePlus, ListFilter, X} from 'lucide-react'
+import {useLoaderData, useNavigation, useSearchParams} from '@remix-run/react'
+import {CirclePlus, X} from 'lucide-react'
 import * as React from 'react'
-import {TweetCard} from '~/components/tweet-card'
+import {TagsFilter} from '~/components/tags-filter'
+import {TweetCard, TweetSkeleton} from '~/components/tweet-card'
 import {Button} from '~/components/ui/button'
 import {Input} from '~/components/ui/input'
+import {getTags} from '~/db/models/tags'
 import {getTweets} from '~/db/models/tweets'
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -16,12 +18,15 @@ export async function loader(args: LoaderFunctionArgs) {
   }
 
   const tweets = await getTweets(args.request, userId)
+  const tags = await getTags(userId)
 
-  return {tweets}
+  return {tweets, tags}
 }
 
 export default function Index() {
   const {tweets} = useLoaderData<typeof loader>()
+  const navigation = useNavigation()
+  const isLoading = navigation.state === 'loading'
 
   return (
     <section>
@@ -29,27 +34,44 @@ export default function Index() {
         <Filters />
       </div>
       <ul className="mx-auto w-full justify-center gap-8 md:columns-2 lg:columns-3">
-        {tweets.map(tweet => {
-          return (
-            <li key={tweet.meta.id} className="mb-8 break-inside-avoid">
-              <TweetCard tweetData={tweet.data} tweetMeta={tweet.meta} />
-            </li>
-          )
-        })}
+        {isLoading
+          ? Array.from({length: 20}).map((_, i) => (
+              <li key={i} className="mb-8 break-inside-avoid">
+                <TweetSkeleton />
+              </li>
+            ))
+          : tweets.map(tweet => {
+              return (
+                <li key={tweet.meta.id} className="mb-8 break-inside-avoid">
+                  <TweetCard tweetData={tweet.data} tweetMeta={tweet.meta} />
+                </li>
+              )
+            })}
       </ul>
     </section>
   )
 }
 
 function Filters() {
-  const submit = useSubmit()
+  const {tags} = useLoaderData<typeof loader>()
   const [searchParams, setSearchParams] = useSearchParams()
   const formRef = React.useRef<HTMLFormElement>(null)
-  const search = searchParams.get('q')
-  const tags = searchParams.getAll('tags')
-  const isFiltered = Boolean(search || tags.length)
+  const searchParamsMap = {
+    search: searchParams.get('q'),
+    tags: searchParams.getAll('tags'),
+  }
+  const isFiltered = Boolean(
+    searchParamsMap.search || searchParamsMap.tags.length,
+  )
 
-  function resetForm() {
+  function searchTweets(e: React.ChangeEvent<HTMLInputElement>) {
+    setSearchParams(prev => {
+      prev.set('q', e.target.value)
+      return prev
+    })
+  }
+
+  function resetFilters() {
     setSearchParams('')
     formRef.current?.reset()
   }
@@ -57,32 +79,22 @@ function Filters() {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <Form
-          ref={formRef}
-          method="get"
-          onChange={e => submit(e.currentTarget)}
-        >
-          <Input
-            type="text"
-            name="q"
-            placeholder="Filter tweets..."
-            className="flex h-8 w-[150px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 lg:w-[250px]"
-          />
-        </Form>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-8 border-dashed shadow-sm"
-        >
-          <ListFilter size={15} className="mr-2" /> Tags
-        </Button>
+        <Input
+          name="q"
+          type="text"
+          placeholder="Filter tweets..."
+          className="flex h-8 w-[150px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 lg:w-[250px]"
+          value={searchParamsMap.search || ''}
+          onChange={searchTweets}
+        />
+        <TagsFilter tags={tags} />
         {isFiltered ? (
           <Button
             variant="ghost"
             size="sm"
             className="h-8"
             type="submit"
-            onClick={resetForm}
+            onClick={resetFilters}
           >
             Reset
             <X className="ml-2 h-4 w-4" />

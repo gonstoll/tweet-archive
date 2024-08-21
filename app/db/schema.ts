@@ -58,3 +58,5 @@ export const tweetWithTagsRelations = relations(tweetsToTags, ({one}) => ({
     references: [tag.id],
   }),
 }))
+
+export type TagColors = typeof tagColors

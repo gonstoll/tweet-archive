@@ -1,8 +1,11 @@
 import {Link} from '@remix-run/react'
 import {EllipsisVertical, SquareArrowOutUpRight} from 'lucide-react'
 import type {MediaDetails, Tweet} from 'react-tweet/api'
-import {Badge} from '~/components/ui/badge'
-import {Button, buttonVariants} from '~/components/ui/button'
+import type {TweetMeta} from '~/db/models/tweets'
+import {classNames} from '~/utils/classnames'
+import {enrichTweet} from '~/utils/tweet'
+import {Badge} from './ui/badge'
+import {Button, buttonVariants} from './ui/button'
 import {
   Card,
   CardContent,
@@ -10,16 +13,14 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card'
+} from './ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '~/components/ui/dropdown-menu'
-import type {TweetMeta} from '~/db/models/tweets'
-import {classNames} from '~/utils/classnames'
-import {enrichTweet} from '~/utils/tweet'
+} from './ui/dropdown-menu'
+import {Skeleton} from './ui/skeleton'
 
 function getTweetUrl(handle: string, tweetId: string) {
   return `https://x.com/${handle}/status/${tweetId}`
@@ -309,6 +310,31 @@ function QuotedTweet({text, user}: Pick<Tweet, 'user' | 'text'>) {
           {text}
         </p>
       </CardContent>
+    </Card>
+  )
+}
+
+export function TweetSkeleton() {
+  return (
+    <Card className="overflow-hidden shadow">
+      <CardHeader>
+        <div className="flex gap-2">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="flex flex-col">
+            <Skeleton className="mb-auto h-4 w-[150px]" />
+            <Skeleton className="h-4 w-[150px]" />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-4 w-[250px]" />
+        <Skeleton className="my-2 h-4 w-[150px]" />
+        <Skeleton className="h-4 w-[200px]" />
+      </CardContent>
+      <CardFooter className="block bg-secondary px-6 py-4">
+        <Skeleton className="mb-2 h-3 w-[220px]" />
+        <Skeleton className="h-3 w-[190px]" />
+      </CardFooter>
     </Card>
   )
 }
