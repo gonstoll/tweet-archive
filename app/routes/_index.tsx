@@ -1,8 +1,13 @@
 import {getAuth} from '@clerk/remix/ssr.server'
 import {redirect, type LoaderFunctionArgs} from '@remix-run/node'
-import {useLoaderData, useNavigation, useSearchParams} from '@remix-run/react'
-import {CirclePlus, X} from 'lucide-react'
-import * as React from 'react'
+import {
+  Link,
+  useLoaderData,
+  useNavigation,
+  useSearchParams,
+} from '@remix-run/react'
+import {CirclePlus} from 'lucide-react'
+import type * as React from 'react'
 import {PaginationBar} from '~/components/pagination-bar'
 import {TagsFilter} from '~/components/tags-filter'
 import {TweetCard, TweetSkeleton} from '~/components/tweet-card'
@@ -57,14 +62,10 @@ export default function Index() {
 function Filters() {
   const {tags} = useLoaderData<typeof loader>()
   const [searchParams, setSearchParams] = useSearchParams()
-  const formRef = React.useRef<HTMLFormElement>(null)
   const searchParamsMap = {
     search: searchParams.get('q'),
     tags: searchParams.getAll('tags'),
   }
-  const isFiltered = Boolean(
-    searchParamsMap.search || searchParamsMap.tags.length,
-  )
 
   function searchTweets(e: React.ChangeEvent<HTMLInputElement>) {
     setSearchParams(prev => {
@@ -73,38 +74,23 @@ function Filters() {
     })
   }
 
-  function resetFilters() {
-    setSearchParams('')
-    formRef.current?.reset()
-  }
-
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
         <Input
           name="q"
-          type="text"
+          type="search"
           placeholder="Filter tweets..."
           className="flex h-8 w-[150px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 lg:w-[250px]"
           value={searchParamsMap.search || ''}
           onChange={searchTweets}
         />
         <TagsFilter tags={tags} />
-        {isFiltered ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8"
-            type="submit"
-            onClick={resetFilters}
-          >
-            Reset
-            <X className="ml-2 h-4 w-4" />
-          </Button>
-        ) : null}
       </div>
-      <Button variant="default" size="sm" className="h-8 shadow-sm">
-        <CirclePlus size={15} className="mr-2" /> Add tweet
+      <Button asChild variant="default" size="sm" className="h-8 shadow-sm">
+        <Link to="new">
+          <CirclePlus size={15} className="mr-2" /> Add tweet
+        </Link>
       </Button>
     </div>
   )

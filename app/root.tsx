@@ -16,10 +16,7 @@ import {getEnv} from './utils/env.server'
 export function meta(): ReturnType<MetaFunction> {
   return [
     {title: 'Tweet Archive'},
-    {
-      name: 'description',
-      content: 'A curated archive of all your saved tweets.',
-    },
+    {name: 'description', content: 'A list of all your saved tweets.'},
   ]
 }
 
@@ -46,7 +43,7 @@ function App() {
             <div>
               <h1 className="text-2xl font-bold">Tweet Archive</h1>
               <h2 className="text-muted-foreground">
-                Here is a list of all your saved tweets
+                A list of all your saved tweets
               </h2>
             </div>
           </header>

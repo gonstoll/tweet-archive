@@ -74,7 +74,7 @@ export function TweetCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent side="bottom" align="end">
               <DropdownMenuItem asChild>
-                <Link to={`/tweet/${tweetMeta.id}`}>Edit</Link>
+                <Link to={`/edit/${tweetMeta.id}`}>Edit</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>Delete</DropdownMenuItem>
               <DropdownMenuSeparator />

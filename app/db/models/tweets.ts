@@ -1,12 +1,16 @@
 import {eq, inArray, type InferSelectModel} from 'drizzle-orm'
 import {fetchTweet, type Tweet} from 'react-tweet/api'
 import {db} from '..'
-import type {tweet} from '../schema'
-import {tag} from '../schema'
+import * as schema from '../schema'
 import type {Tag} from './tags'
+import type {LoaderFunctionArgs} from '@remix-run/node'
+import {getAuth} from '@clerk/remix/ssr.server'
 
-export type TweetMeta = InferSelectModel<typeof tweet> & {
+export type TweetMeta = InferSelectModel<typeof schema.tweet> & {
   tags: Array<Omit<Tag, 'userId'>>
+}
+export type NewTweet = Pick<TweetMeta, 'url' | 'description'> & {
+  tagIds?: Array<string>
 }
 
 export async function getTweets(request: Request, userId: string) {
@@ -37,7 +41,7 @@ export async function getTweets(request: Request, userId: string) {
           return exists(
             db
               .select()
-              .from(tag)
+              .from(schema.tag)
               .where(tag =>
                 and(
                   eq(tag.id, tweetsToTags.tagId),
@@ -124,4 +128,50 @@ function getTweetId(tweetUrl: string) {
   }
 
   return tweetId
+}
+
+async function isTweetDuplicated(tweetId: string) {
+  const existingTweet = await db.query.tweet.findFirst({
+    where: (tweets, {and, like}) => {
+      return and(like(tweets.url, `%${tweetId}%`))
+    },
+  })
+
+  return Boolean(existingTweet)
+}
+
+export async function createTweet(
+  loaderArgs: LoaderFunctionArgs,
+  {tagIds, ...restNewTweet}: NewTweet,
+) {
+  const user = await getAuth(loaderArgs)
+
+  if (!user.userId) {
+    throw new Error('You must login to create a tweet')
+  }
+
+  const existingTweet = await isTweetDuplicated(getTweetId(restNewTweet.url))
+
+  if (existingTweet) {
+    throw new Error('That tweet already exists')
+  }
+
+  try {
+    const createdTweet = await db
+      .insert(schema.tweet)
+      .values({...restNewTweet, userId: user.userId, createdAt: new Date()})
+      .returning({id: schema.tweet.id})
+
+    if (tagIds?.length) {
+      await db.insert(schema.tweetsToTags).values(
+        tagIds.map(id => ({
+          tweetId: Number(createdTweet[0].id),
+          tagId: Number(id),
+        })),
+      )
+    }
+  } catch (error) {
+    console.error(error)
+    throw new Error('Something went wrong when creating the tweet')
+  }
 }
