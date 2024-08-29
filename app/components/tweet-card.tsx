@@ -5,7 +5,7 @@ import type {TweetMeta} from '~/db/models/tweets'
 import {classNames} from '~/utils/classnames'
 import {enrichTweet} from '~/utils/tweet'
 import {Badge} from './ui/badge'
-import {Button, buttonVariants} from './ui/button'
+import {Button} from './ui/button'
 import {
   Card,
   CardContent,
@@ -18,6 +18,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import {Skeleton} from './ui/skeleton'
@@ -76,6 +77,17 @@ export function TweetCard({
                 <Link to={`/tweet/${tweetMeta.id}`}>Edit</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>Delete</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link
+                  to={getTweetUrl(tweetData.user.screen_name, tweetData.id_str)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Go to tweet{' '}
+                  <SquareArrowOutUpRight size={15} className="ml-2" />
+                </Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -150,16 +162,6 @@ export function TweetCard({
             <TweetStats type="retweet" count={tweetData.conversation_count} />
           </div>
         </div>
-
-        <Link
-          to={getTweetUrl(tweetData.user.screen_name, tweetData.id_str)}
-          className={classNames(
-            'mt-4 w-full border-dashed shadow-sm',
-            buttonVariants({variant: 'outline'}),
-          )}
-        >
-          Go to tweet <SquareArrowOutUpRight size={15} className="ml-2" />
-        </Link>
       </CardContent>
 
       <div
