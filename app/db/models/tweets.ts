@@ -13,6 +13,8 @@ export async function getTweets(request: Request, userId: string) {
   const url = new URL(request.url)
   const search = url.searchParams.get('q') ?? ''
   const tagsSearchParam = url.searchParams.getAll('tags') ?? []
+  const $skip = Number(url.searchParams.get('$skip')) || 0
+  const $top = Number(url.searchParams.get('$top')) || 10
 
   const filteredTweetsQuery = await db.query.tweet.findMany({
     orderBy: ({createdAt}, {desc}) => desc(createdAt),
@@ -58,7 +60,10 @@ export async function getTweets(request: Request, userId: string) {
     .map(t => t.id)
 
   if (!filteredTweetIds.length) {
-    return []
+    return {
+      tweets: [],
+      totalTweets: 0,
+    }
   }
 
   const filteredTweetsWithTags = await db.query.tweet.findMany({
@@ -67,7 +72,8 @@ export async function getTweets(request: Request, userId: string) {
         with: {tag: true},
       },
     },
-    limit: 10,
+    limit: $top,
+    offset: $skip,
     orderBy: ({createdAt}, {desc}) => desc(createdAt),
     where: (tweets, {eq, and}) => {
       return and(
@@ -103,7 +109,10 @@ export async function getTweets(request: Request, userId: string) {
     }
   }
 
-  return userTweets
+  return {
+    tweets: userTweets,
+    totalTweets: filteredTweetIds.length,
+  }
 }
 
 function getTweetId(tweetUrl: string) {
