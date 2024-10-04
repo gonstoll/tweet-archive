@@ -51,13 +51,22 @@ Turso:
 bun db:generate && bun db:migrate && bun db:push
 ```
 
-If you want to have some data right off the bat, you can run the seed command:
+If you want to have some data right off the bat, it's going to be extremely
+simple thanks to SQLite's simplicity. You need to first generate a local
+database file by running:
+
+```bash
+turso dev --db-file local.db
+```
+
+This will create a `local.db` file in the root of the project. You can now
+populate it with some data:
 
 ```bash
 bun db:seed
 ```
 
-Then you can run the app:
+Now you can run the app:
 
 ```bash
 bun dev
