@@ -1,16 +1,45 @@
+import {getAuth} from '@clerk/remix/ssr.server'
+import type {LoaderFunctionArgs} from '@remix-run/node'
 import {eq, inArray, type InferSelectModel} from 'drizzle-orm'
 import {fetchTweet, type Tweet} from 'react-tweet/api'
 import {db} from '..'
 import * as schema from '../schema'
 import type {Tag} from './tags'
-import type {LoaderFunctionArgs} from '@remix-run/node'
-import {getAuth} from '@clerk/remix/ssr.server'
 
 export type TweetMeta = InferSelectModel<typeof schema.tweet> & {
   tags: Array<Omit<Tag, 'userId'>>
 }
 export type NewTweet = Pick<TweetMeta, 'url' | 'description'> & {
   tagIds?: Array<string>
+}
+export type UpdatedTweet = Pick<TweetMeta, 'url' | 'description'> & {
+  tagIds?: Array<string>
+  id: number
+}
+
+export async function getTweet(tweetId: number) {
+  const tweet = await db.query.tweet.findFirst({
+    where: (tweets, {eq}) => eq(tweets.id, Number(tweetId)),
+    with: {
+      tweetsToTags: {
+        with: {tag: true},
+      },
+    },
+  })
+
+  if (!tweet) {
+    throw new Error(`Tweet with id ${tweetId} could not be found`)
+  }
+
+  const tags = tweet.tweetsToTags.map(t => t.tag)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const {tweetsToTags, ...userTweet} = tweet
+
+  return {
+    ...userTweet,
+    tags,
+    tweetId: getTweetId(userTweet.url),
+  }
 }
 
 export async function getTweets(request: Request, userId: string) {
@@ -173,5 +202,41 @@ export async function createTweet(
   } catch (error) {
     console.error(error)
     throw new Error('Something went wrong when creating the tweet')
+  }
+}
+
+export async function editTweet(
+  loaderArgs: LoaderFunctionArgs,
+  tweet: UpdatedTweet,
+) {
+  const user = await getAuth(loaderArgs)
+
+  if (!user.userId) {
+    throw new Error('You must login to create a tweet')
+  }
+
+  const {tagIds, id, ...restTweet} = tweet
+
+  try {
+    await db
+      .update(schema.tweet)
+      .set(restTweet)
+      .where(eq(schema.tweet.id, Number(id)))
+
+    await db
+      .delete(schema.tweetsToTags)
+      .where(eq(schema.tweetsToTags.tweetId, Number(id)))
+
+    if (tagIds?.length) {
+      await db.insert(schema.tweetsToTags).values(
+        tagIds.map(id => ({
+          tweetId: Number(tweet.id),
+          tagId: Number(id),
+        })),
+      )
+    }
+  } catch (error) {
+    console.error(error)
+    throw new Error('Something went wrong when updating the tweet')
   }
 }

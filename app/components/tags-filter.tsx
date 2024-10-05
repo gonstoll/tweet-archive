@@ -18,13 +18,16 @@ import type {Tag} from '~/db/models/tags'
 import {cn} from '~/lib/utils'
 
 type TagsFilterProps = {
-  tags: Array<Tag>
   form?: boolean
+  tags: Array<Tag>
+  initialTags?: Array<Tag>
 }
 
-export function TagsFilter({tags, form = false}: TagsFilterProps) {
+export function TagsFilter({tags, form = false, initialTags}: TagsFilterProps) {
   const [searchParams, setSearchParams] = useSearchParams()
-  const preselectedTags = new Set(searchParams.getAll('tags'))
+  const preselectedTags = new Set(
+    initialTags?.map(t => t.name) ?? searchParams.getAll('tags'),
+  )
   const [selectedTags, setSelectedTags] = React.useState(preselectedTags)
 
   function isSelected(tag: Tag) {
