@@ -17,6 +17,7 @@ import {
   useNavigation,
 } from '@remix-run/react'
 import {AlertCircle, Loader2} from 'lucide-react'
+import {useSpinDelay} from 'spin-delay'
 import {z} from 'zod'
 import {ErrorList} from '~/components/error-list'
 import {TagsFilter} from '~/components/tags-filter'
@@ -100,6 +101,7 @@ export default function Tweet() {
   const navigation = useNavigation()
   const submitting =
     navigation.state === 'submitting' || navigation.state === 'loading'
+  const showSpinner = useSpinDelay(submitting, {minDuration: 400})
   const [form, fields] = useForm({
     id: 'new-tweet',
     constraint: getZodConstraint(schema),
@@ -144,7 +146,7 @@ export default function Tweet() {
           <Link to="/">Cancel</Link>
         </Button>
         <Button type="submit" variant="default" disabled={submitting}>
-          {submitting ? <Loader2 className="mr-2 animate-spin" /> : null}
+          {showSpinner ? <Loader2 className="mr-2 animate-spin" /> : null}
           Save
         </Button>
       </div>
