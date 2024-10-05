@@ -1,0 +1,7 @@
+#!/bin/bash
+
+export NODE_ENV=development
+
+if [ -f .env.development ]; then
+  export $(cat .env.development | sed '/^#/d' | sed '/^$/d' | xargs)
+fi

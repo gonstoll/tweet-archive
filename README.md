@@ -18,7 +18,7 @@ your leisure.
 
 ## Tech Stack and infrastructure
 
-- Next.js
+- Remix
 - Tailwind CSS
 - Drizzle ORM
 - Zod
@@ -45,20 +45,29 @@ bun install
 ```
 
 Next thing, you'll need to run the db migrations and push the schema to
-Planetscale:
+Turso:
 
 ```bash
-bun run db:migrate && bun run db:push
+bun db:generate && bun db:migrate && bun db:push
 ```
 
-If you wanna have some data right off the bat, you can run the seed command:
+If you want to have some data right off the bat, it's going to be extremely
+simple thanks to SQLite's simplicity. You need to first generate a local
+database file by running:
 
 ```bash
-bunx ts-node ./src/db/seed.ts
+turso dev --db-file local.db
 ```
 
-Then you can run the app:
+This will create a `local.db` file in the root of the project. You can now
+populate it with some data:
 
 ```bash
-bun run dev
+bun db:seed
+```
+
+Now you can run the app:
+
+```bash
+bun dev
 ```
