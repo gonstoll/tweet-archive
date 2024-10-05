@@ -143,20 +143,20 @@ export function TagsFilter({tags, form = false}: TagsFilterProps) {
                   )
                 })}
               </CommandGroup>
-              {selectedTags.size > 0 ? (
-                <>
-                  <CommandSeparator />
-                  <CommandGroup>
-                    <CommandItem
-                      onSelect={clearTags}
-                      className="justify-center text-center"
-                    >
-                      Clear filters
-                    </CommandItem>
-                  </CommandGroup>
-                </>
-              ) : null}
             </CommandList>
+            {selectedTags.size > 0 ? (
+              <>
+                <CommandSeparator />
+                <CommandGroup>
+                  <CommandItem
+                    onSelect={clearTags}
+                    className="justify-center text-center"
+                  >
+                    Clear filters
+                  </CommandItem>
+                </CommandGroup>
+              </>
+            ) : null}
           </Command>
         </PopoverContent>
       </Popover>
