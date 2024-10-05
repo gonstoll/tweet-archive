@@ -240,3 +240,24 @@ export async function editTweet(
     throw new Error('Something went wrong when updating the tweet')
   }
 }
+
+export async function deleteTweet(
+  loaderArgs: LoaderFunctionArgs,
+  tweetId: number,
+) {
+  const user = await getAuth(loaderArgs)
+
+  if (!user.userId) {
+    throw new Error('You must login to create a tweet')
+  }
+
+  try {
+    await db
+      .delete(schema.tweetsToTags)
+      .where(eq(schema.tweetsToTags.tweetId, tweetId))
+    await db.delete(schema.tweet).where(eq(schema.tweet.id, tweetId))
+  } catch (error) {
+    console.error(error)
+    throw new Error('Something went wrong when deleting the tweet')
+  }
+}

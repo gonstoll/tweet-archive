@@ -1,6 +1,8 @@
-import {Link} from '@remix-run/react'
+import * as React from 'react'
+import {Link, useFetcher} from '@remix-run/react'
 import {EllipsisVertical, SquareArrowOutUpRight} from 'lucide-react'
 import type {MediaDetails, Tweet} from 'react-tweet/api'
+import {useSpinDelay} from 'spin-delay'
 import type {TweetMeta} from '~/db/models/tweets'
 import {classNames} from '~/utils/classnames'
 import {enrichTweet} from '~/utils/tweet'
@@ -34,7 +36,14 @@ export function TweetCard({
   tweetData: Tweet
   tweetMeta: Omit<TweetMeta, 'createdAt'> & {createdAt: string}
 }) {
+  const cardRef = React.useRef<HTMLDivElement>(null)
+  const [height, setHeight] = React.useState<number>()
+  const fetcher = useFetcher()
   const enrichedTweet = enrichTweet(tweetData)
+  const submitting =
+    fetcher.state === 'submitting' ||
+    (fetcher.state === 'loading' && fetcher.formMethod === 'post')
+  const showSpinner = useSpinDelay(submitting, {minDuration: 400})
 
   const tweetDate = new Date(tweetData.created_at).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -44,8 +53,26 @@ export function TweetCard({
     minute: 'numeric',
   })
 
+  React.useEffect(() => {
+    if (cardRef.current) {
+      setHeight(cardRef.current?.clientHeight)
+    }
+  }, [])
+
+  // TODO: Continue here. For some reason after deleting and showing the spinner
+  // the tweet is still there. Maybe the showSpinner boolean is not set correctly?
+  // I just changed it to include the 'loading' state and the formMethod, but didn't check
+  // Another possibility is checking what's inside the fetcher, something around `data`.
+  if (showSpinner) {
+    return (
+      <div className="bg-red-500" style={{height}}>
+        Hey!
+      </div>
+    )
+  }
+
   return (
-    <Card className="overflow-hidden shadow">
+    <Card ref={cardRef} className="overflow-hidden shadow">
       <CardHeader>
         <div className="flex items-start justify-between">
           <a href={getTweetUrl(tweetData.user.screen_name, tweetData.id_str)}>
@@ -76,7 +103,20 @@ export function TweetCard({
               <DropdownMenuItem asChild>
                 <Link to={`/edit/${tweetMeta.id}`}>Edit</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>Delete</DropdownMenuItem>
+              <fetcher.Form method="post" action="/resource/delete-tweet">
+                <DropdownMenuItem asChild>
+                  <Button
+                    variant="dropdown"
+                    size="dropdown"
+                    type="submit"
+                    name="id"
+                    value={tweetMeta.id}
+                    className="justify-start font-normal focus-visible:ring-0 focus-visible:ring-offset-0"
+                  >
+                    Delete
+                  </Button>
+                </DropdownMenuItem>
+              </fetcher.Form>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link
